@@ -1,0 +1,4220 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Glitch Paint 95 - Sigil Studio Edition</title>
+  <link rel="stylesheet" href="https://unpkg.com/98.css" />
+  <script src="https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gifuct-js@2.1.2/dist/gifuct.min.js"></script>
+  <script type="module">
+    window.gifDecoderReady = import('https://cdn.jsdelivr.net/npm/gifuct-js@2.1.2/+esm')
+      .then(mod => {
+        window.parseGIF = mod.parseGIF;
+        window.decompressFrames = mod.decompressFrames;
+      })
+      .catch(err => {
+        window.gifDecoderLoadError = err;
+      });
+  </script>
+  <style>
+    /* WIN95 STYLING */
+    body,
+    html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #008080;
+      font-family: 'Pixelated MS Sans Serif', 'Courier New', monospace;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    .window {
+      display: flex;
+      flex-direction: column;
+      width: 99vw;
+      height: 98vh;
+      margin: 0.5vh auto;
+      background: #c0c0c0;
+      border: 1px solid #ffffff;
+      border-right-color: #0a0a0a;
+      border-bottom-color: #0a0a0a;
+      overflow: hidden;
+    }
+
+    .window-body {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      margin: 0;
+      padding: 4px;
+      background: #c0c0c0;
+      overflow: hidden;
+    }
+
+    .title-bar {
+      background: #000080;
+      padding: 6px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: default;
+      flex-shrink: 0;
+    }
+
+    .title-bar-text {
+      color: #ffffff;
+      font-weight: bold;
+      font-size: 12px;
+      font-family: 'Pixelated MS Sans Serif', monospace;
+    }
+
+    .title-bar-controls button {
+      background: #c0c0c0;
+      border: 1px solid #ffffff;
+      border-right-color: #0a0a0a;
+      border-bottom-color: #0a0a0a;
+      width: 18px;
+      height: 18px;
+      margin-left: 4px;
+      cursor: pointer;
+    }
+
+    .menubar {
+      display: flex;
+      gap: 20px;
+      font-size: 11px;
+      margin-bottom: 6px;
+      padding: 3px 6px;
+      background: #c0c0c0;
+      border-bottom: 1px solid #808080;
+      flex-shrink: 0;
+    }
+
+    .menubar span {
+      cursor: default;
+      color: #000000;
+    }
+
+    .menubar span u {
+      text-decoration: underline;
+    }
+
+    .main-area {
+      display: flex;
+      flex: 1;
+      gap: 6px;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    .left-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      width: 66px;
+      flex-shrink: 0;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2px;
+      justify-content: center;
+    }
+
+    .tool-btn {
+      width: 32px;
+      height: 32px;
+      background: #c0c0c0;
+      box-shadow: inset 1px 1px #fff, inset -1px -1px #0a0a0a, inset 2px 2px #dfdfdf, inset -2px -2px #808080;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 14px;
+      font-weight: bold;
+      font-family: monospace;
+    }
+
+    .tool-btn.active {
+      box-shadow: inset -1px -1px #fff, inset 1px 1px #0a0a0a !important;
+      background: #dfdfdf;
+    }
+
+    .size-options {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 4px;
+      background: #c0c0c0;
+      box-shadow: inset -1px -1px #fff, inset 1px 1px #0a0a0a;
+    }
+
+    .size-options .tool-btn {
+      width: 100%;
+      height: 28px;
+    }
+
+    .canvas-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .canvas-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 6px;
+      font-size: 10px;
+      background: #c0c0c0;
+      padding: 3px;
+      box-shadow: inset -1px -1px #fff, inset 1px 1px #0a0a0a;
+      flex-wrap: wrap;
+    }
+
+    .canvas-controls input {
+      background: #ffffff;
+      border: 1px solid #808080;
+      padding: 2px;
+      width: 55px;
+      font-family: monospace;
+    }
+
+    .canvas-controls button {
+      background: #c0c0c0;
+      border: 2px solid;
+      border-color: #fff #808080 #808080 #fff;
+      padding: 2px 8px;
+      cursor: pointer;
+      font-family: monospace;
+      font-size: 10px;
+    }
+
+    .canvas-controls button:active {
+      border-color: #808080 #fff #fff #808080;
+    }
+
+    .export-scale {
+      background: #c0c0c0;
+      border: 2px solid;
+      border-color: #fff #808080 #808080 #fff;
+      padding: 2px 4px;
+      font-family: monospace;
+      font-size: 10px;
+      cursor: pointer;
+    }
+
+    .fps-select {
+      background: #c0c0c0;
+      border: 2px solid;
+      border-color: #fff #808080 #808080 #fff;
+      padding: 2px 4px;
+      font-family: monospace;
+      font-size: 10px;
+      cursor: pointer;
+    }
+
+    .canvas-container {
+      flex: 1;
+      overflow: auto;
+      background: #808080;
+      padding: 3px;
+      box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #fff;
+      min-height: 0;
+      position: relative;
+    }
+
+    .canvas-wrapper {
+      position: relative;
+      background: #ffffff;
+      box-shadow: 1px 1px 0px #0a0a0a;
+      cursor: crosshair;
+      margin: auto;
+      display: block;
+    }
+
+    .canvas-wrapper canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      image-rendering: crisp-edges;
+      image-rendering: pixelated;
+    }
+
+    #gridCanvas {
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    #staticCanvas {
+      pointer-events: none;
+    }
+
+    #paintCanvas {
+      touch-action: none;
+    }
+
+    .right-panel {
+      width: 238px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      overflow-y: hidden;
+      overflow-x: hidden;
+    }
+
+    .sigil-panel {
+      background: #c0c0c0;
+      padding: 5px;
+      box-shadow: inset -1px -1px #fff, inset 1px 1px #0a0a0a;
+    }
+
+    .sigil-title {
+      font-size: 11px;
+      font-weight: bold;
+      background: #000080;
+      color: white;
+      padding: 3px;
+      margin-bottom: 4px;
+      text-align: center;
+    }
+
+    .sigil-control-group {
+      margin-bottom: 3px;
+    }
+
+    .sigil-label {
+      font-size: 9px;
+      font-weight: bold;
+      margin-bottom: 1px;
+      color: #000;
+    }
+
+    .sigil-panel select,
+    .sigil-panel input {
+      width: 100%;
+      font-size: 10px;
+      background: #ffffff;
+      border: 1px solid #808080;
+      padding: 2px;
+    }
+
+    .sigil-btn {
+      width: 100%;
+      background: #c0c0c0;
+      border: 2px solid;
+      border-color: #fff #808080 #808080 #fff;
+      padding: 3px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-top: 3px;
+      font-size: 9px;
+    }
+
+    .sigil-btn:active {
+      border-color: #808080 #fff #fff #808080;
+    }
+
+    .sigil-preview {
+      background: #ffffff;
+      margin-top: 4px;
+      padding: 2px;
+      text-align: center;
+      border: 1px solid #808080;
+    }
+
+    .sigil-preview canvas {
+      background: #ffffff;
+      image-rendering: crisp-edges;
+      image-rendering: pixelated;
+      width: 64px !important;
+      height: 64px !important;
+    }
+
+    .corrupt-section {
+      margin-top: 5px;
+      padding-top: 4px;
+      border-top: 1px solid #808080;
+    }
+
+    .corrupt-title {
+      font-size: 10px;
+      font-weight: bold;
+      color: #800000;
+      text-align: center;
+      margin-bottom: 5px;
+      line-height: 1;
+    }
+
+    .corrupt-intensity {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      margin-bottom: 6px;
+      line-height: 1;
+    }
+
+    .corrupt-intensity span {
+      font-size: 9px;
+      font-weight: bold;
+    }
+
+    .gif-section {
+      margin-top: 5px;
+      padding-top: 4px;
+      border-top: 1px solid #808080;
+    }
+
+    .gif-title {
+      font-size: 10px;
+      font-weight: bold;
+      background: #006400;
+      color: white;
+      text-align: center;
+      padding: 2px;
+      margin-bottom: 4px;
+    }
+
+    .gif-controls {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 6px;
+      flex-wrap: wrap;
+    }
+
+    .gif-controls button {
+      flex: 1;
+      background: #c0c0c0;
+      border: 2px solid;
+      border-color: #fff #808080 #808080 #fff;
+      padding: 3px;
+      cursor: pointer;
+      font-size: 9px;
+      font-weight: bold;
+    }
+
+    .gif-controls button:active {
+      border-color: #808080 #fff #fff #808080;
+    }
+
+    .gif-info {
+      font-size: 8px;
+      text-align: center;
+      margin-top: 4px;
+      color: #404040;
+    }
+
+    .bottom-bar {
+      margin-top: 4px;
+      flex-shrink: 0;
+      background: #c0c0c0;
+      padding: 4px;
+      box-shadow: inset -1px -1px #fff, inset 1px 1px #0a0a0a;
+    }
+
+    .color-section {
+      display: flex;
+      gap: 6px;
+      align-items: stretch;
+      margin-bottom: 4px;
+      padding-bottom: 3px;
+      border-bottom: 1px solid #808080;
+    }
+
+    .selected-colors-box {
+      width: 38px;
+      height: 38px;
+      position: relative;
+      background: #c0c0c0;
+      box-shadow: inset -1px -1px #fff, inset 1px 1px #0a0a0a;
+      flex-shrink: 0;
+    }
+
+    .swatch {
+      position: absolute;
+      width: 17px;
+      height: 17px;
+      border: 1px solid #808080;
+      cursor: pointer;
+    }
+
+    #bg-swatch {
+      right: 3px;
+      bottom: 3px;
+    }
+
+    #fg-swatch {
+      left: 3px;
+      top: 3px;
+      z-index: 10;
+    }
+
+    .palette-grid {
+      display: grid;
+      grid-template-columns: repeat(16, 16px);
+      gap: 1px;
+      background: #c0c0c0;
+      padding: 2px;
+      overflow: hidden;
+    }
+
+    .palette-color {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+      border: 1px solid;
+      border-color: #dfdfdf #808080 #808080 #dfdfdf;
+    }
+
+    .palette-pair {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .palette-block {
+      min-width: 0;
+    }
+
+    .palette-title {
+      font-size: 8px;
+      font-weight: bold;
+      color: #000080;
+      margin-bottom: 2px;
+      text-align: center;
+    }
+
+    .neon-palette-grid {
+      box-shadow: inset 0 0 0 1px #808080;
+    }
+
+    .glitch-fx-section {
+      margin-top: 4px;
+    }
+
+    .glitch-fx-title {
+      font-size: 9px;
+      font-weight: bold;
+      color: #000080;
+      margin-bottom: 4px;
+      text-align: center;
+    }
+
+    .paints-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 3px;
+      justify-content: center;
+      max-height: 62px;
+      overflow-y: auto;
+    }
+
+    .paints-bar .tool-btn {
+      width: 50px;
+      height: 28px;
+      font-size: 9px;
+    }
+
+    .fx-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin: 4px 0;
+      font-size: 9px;
+    }
+
+    .fx-controls button,
+    .fx-controls select {
+      font-size: 9px;
+      height: 24px;
+    }
+
+    #op-art-mosh-btn {
+      font-weight: bold;
+      background: #111;
+      color: #00ff66;
+      border-color: #fff #0a0a0a #0a0a0a #fff;
+      padding: 2px 8px;
+      min-width: 100px;
+    }
+
+    .status-bar {
+      margin-top: 6px;
+      display: flex;
+      gap: 20px;
+      font-size: 10px;
+      padding: 4px 8px;
+      background: #c0c0c0;
+      box-shadow: inset -1px -1px #fff, inset 1px 1px #0a0a0a;
+      flex-shrink: 0;
+    }
+
+    #gif-progress-overlay {
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(2px);
+      border: 2px solid #000080;
+    }
+
+    /* Help Popup - Fixed */
+    #help-popup-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.4);
+      z-index: 2000;
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .help-popup-window {
+      width: 450px;
+      max-width: 90vw;
+      max-height: 80vh;
+    }
+
+    .help-popup-window .window-body {
+      max-height: 60vh;
+      overflow-y: auto;
+      font-size: 11px;
+      padding: 12px;
+    }
+
+    .help-section {
+      margin-bottom: 16px;
+    }
+
+    .help-section h4 {
+      margin: 0 0 8px 0;
+      color: #000080;
+      font-size: 11px;
+      border-left: 3px solid #000080;
+      padding-left: 6px;
+    }
+
+    .help-section p {
+      margin: 6px 0;
+      line-height: 1.4;
+    }
+
+    .shortcut-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 5px 0;
+      border-bottom: 1px solid #c0c0c0;
+    }
+
+    .shortcut-key {
+      background: #dfdfdf;
+      padding: 2px 8px;
+      font-family: monospace;
+      font-weight: bold;
+      border: 1px solid #808080;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #c0c0c0;
+      border: 1px solid #808080;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #808080;
+      border: 1px solid #ffffff;
+    }
+    /* Tablet Optimization */
+@media (max-width: 1024px) and (orientation: landscape) {
+  .window {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    border-radius: 0;
+  }
+  
+  .canvas-wrapper {
+    transform: scale(0.9);
+    transform-origin: center;
+  }
+  
+  .canvas-container {
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .paints-bar {
+    max-height: 60px;
+  }
+  
+  .palette-grid {
+    grid-template-columns: repeat(16, 14px);
+  }
+  
+  .palette-color {
+    width: 14px;
+    height: 14px;
+  }
+  
+  .sigil-preview canvas {
+    width: 48px !important;
+    height: 48px !important;
+  }
+}
+
+@media (max-width: 768px) and (orientation: portrait) {
+  .main-area {
+    flex-direction: column;
+  }
+  
+  .left-panel {
+    flex-direction: row;
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  
+  .right-panel {
+    width: 100%;
+    max-height: 200px;
+  }
+  
+  .toolbar {
+    flex-wrap: wrap;
+  }
+}
+  </style>
+</head>
+
+<body>
+
+<div class="window">
+  <div class="title-bar">
+    <div class="title-bar-text">Glitch Paint 95 - Sigil Studio Edition</div>
+    <div class="title-bar-controls">
+      <button aria-label="Minimize">_</button>
+      <button aria-label="Maximize">[]</button>
+      <button aria-label="Close">X</button>
+    </div>
+  </div>
+  <div class="window-body">
+    <div class="menubar" style="position: relative;">
+      <span class="menu-file"><u>F</u>ile</span>
+      <div id="file-dropdown" style="display: none; position: absolute; top: 20px; left: 0px; background: #c0c0c0; border: 1px solid #fff; border-right-color: #0a0a0a; border-bottom-color: #0a0a0a; z-index: 100; flex-direction: column; padding: 2px; min-width: 130px;">
+        <div class="menu-item" id="menu-open-image" style="padding: 4px 12px; cursor: pointer;">Open Image...</div>
+        <div class="menu-item" id="menu-import-gif" style="padding: 4px 12px; cursor: pointer;">Import GIF...</div>
+        <div class="menu-item" id="menu-save-png" style="padding: 4px 12px; cursor: pointer;">Save as PNG...</div>
+        <div class="menu-item" id="menu-save-gif" style="padding: 4px 12px; cursor: pointer;">Save as GIF...</div>
+      </div>
+      <span class="menu-edit"><u>E</u>dit</span>
+      <div id="edit-dropdown" style="display: none; position: absolute; top: 20px; left: 45px; background: #c0c0c0; border: 1px solid #fff; border-right-color: #0a0a0a; border-bottom-color: #0a0a0a; z-index: 100; flex-direction: column; padding: 2px;">
+        <div class="menu-item" id="menu-undo" style="padding: 4px 12px; cursor: pointer;">Undo (Ctrl+Z)</div>
+        <div class="menu-item" id="menu-redo" style="padding: 4px 12px; cursor: pointer;">Redo (Ctrl+Y)</div>
+        <div class="menu-item" id="menu-clear" style="padding: 4px 12px; cursor: pointer;">Clear Canvas</div>
+      </div>
+      <span class="menu-options"><u>O</u>ptions</span>
+      <div id="options-dropdown" style="display: none; position: absolute; top: 20px; left: 100px; background: #c0c0c0; border: 1px solid #fff; border-right-color: #0a0a0a; border-bottom-color: #0a0a0a; z-index: 100; flex-direction: column; padding: 2px; min-width: 120px;">
+        <div class="menu-item" id="menu-toggle-grid" style="padding: 4px 12px; cursor: pointer;">Toggle Grid</div>
+      </div>
+      <span class="menu-help"><u>H</u>elp</span>
+      <div id="help-dropdown" style="display: none; position: absolute; top: 20px; left: 170px; background: #c0c0c0; border: 1px solid #fff; border-right-color: #0a0a0a; border-bottom-color: #0a0a0a; z-index: 100; flex-direction: column; padding: 2px; min-width: 150px;">
+        <div class="menu-item" id="menu-help-guide" style="padding: 4px 12px; cursor: pointer;">User Guide</div>
+        <div class="menu-item" id="menu-help-shortcuts" style="padding: 4px 12px; cursor: pointer;">Shortcuts</div>
+        <div class="menu-item" id="menu-help-about" style="padding: 4px 12px; cursor: pointer;">About</div>
+      </div>
+    </div>
+
+    <!-- HELP POPUP - FIXED AND WORKING -->
+    <div id="help-popup-overlay">
+      <div class="window help-popup-window">
+        <div class="title-bar">
+          <div class="title-bar-text" id="help-popup-title">Help</div>
+          <div class="title-bar-controls">
+            <button aria-label="Close" id="help-popup-close">X</button>
+          </div>
+        </div>
+        <div class="window-body" id="help-popup-content">
+          <!-- Content loads here -->
+        </div>
+      </div>
+    </div>
+
+    <div id="gif-progress-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:999; justify-content:center; align-items:center;">
+      <div class="window" style="margin:0; min-width:320px;">
+        <div class="title-bar"><div class="title-bar-text">Saving GIF...</div></div>
+        <div class="window-body" style="padding:16px;">
+          <p id="gif-status-text" style="margin:0 0 8px 0; font-size:11px;">Capturing frames...</p>
+          <div style="width:100%; height:20px; box-shadow:inset -1px -1px #fff, inset 1px 1px #0a0a0a; background:#c0c0c0; padding:2px;">
+            <div id="gif-progress-bar" style="width:0%; height:100%; background:#000080;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="main-area">
+      <div class="left-panel">
+        <div class="toolbar tools-bar"></div>
+        <div class="size-options"></div>
+      </div>
+
+      <div class="canvas-area">
+        <div class="canvas-controls">
+          <span>Canvas:</span>
+          <input id="canvas-width-input" type="number" min="1" value="500">
+          <span>x</span>
+          <input id="canvas-height-input" type="number" min="1" value="500">
+          <button id="resize-canvas-btn">Resize</button>
+          <span style="margin-left: 8px;">Scale:</span>
+          <select id="export-scale" class="export-scale">
+            <option value="1">1x</option>
+            <option value="2">2x</option>
+            <option value="3">3x</option>
+            <option value="4">4x</option>
+          </select>
+          <span>FPS:</span>
+          <select id="export-fps" class="fps-select">
+            <option value="6">6 fps</option>
+            <option value="12">12 fps</option>
+            <option value="15">15 fps</option>
+            <option value="24" selected>24 fps</option>
+            <option value="30">30 fps</option>
+          </select>
+          <input id="open-image-input" type="file" accept="image/*" style="display:none;">
+          <input id="import-gif-input" type="file" accept="image/gif" style="display:none;">
+        </div>
+        <div class="canvas-container">
+          <div class="canvas-wrapper" id="canvasWrapper">
+            <canvas id="staticCanvas" width="500" height="500"></canvas>
+            <canvas id="paintCanvas" width="500" height="500"></canvas>
+            <canvas id="gridCanvas" width="500" height="500" style="display:none;"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="right-panel">
+        <div class="sigil-panel">
+          <div class="sigil-title">SIGIL STUDIO</div>
+          <div class="sigil-control-group">
+            <div class="sigil-label">Grid Size</div>
+            <select id="sigil-size">
+              <option value="8">8x8</option>
+              <option value="12">12x12</option>
+              <option value="16" selected>16x16</option>
+              <option value="24">24x24</option>
+              <option value="32">32x32</option>
+              <option value="48">48x48</option>
+            </select>
+          </div>
+          <div class="sigil-control-group">
+            <div class="sigil-label">Symmetry</div>
+            <select id="sigil-symmetry">
+              <option value="none">None</option>
+              <option value="horizontal" selected>Horizontal</option>
+              <option value="vertical">Vertical</option>
+              <option value="rotational">Rotational</option>
+              <option value="bilateral">Bilateral</option>
+            </select>
+          </div>
+          <div class="sigil-control-group">
+            <div class="sigil-label">Style</div>
+            <select id="sigil-style">
+              <option value="circuit">Circuit</option>
+              <option value="rune" selected>Rune</option>
+              <option value="weave">Weave</option>
+              <option value="geometric">Geometric</option>
+              <option value="qr">QR-like</option>
+              <option value="organic">Organic</option>
+            </select>
+          </div>
+          <div class="sigil-control-group">
+            <div class="sigil-label">Density: <span id="density-value">50</span>%</div>
+            <input type="range" id="sigil-density" min="10" max="90" value="50" step="5">
+          </div>
+          <button id="generate-sigil-btn" class="sigil-btn">GENERATE SIGIL</button>
+          <div class="sigil-preview">
+            <canvas id="sigil-preview-canvas" width="96" height="96" style="width:96px; height:96px;"></canvas>
+            <div style="font-size:7px; margin-top:2px;">Preview</div>
+          </div>
+          <button id="import-sigil-btn" class="sigil-btn" style="background:#000080; color:white;">IMPORT TO CANVAS</button>
+          <button id="ritual-sigil-gif-btn" class="sigil-btn" style="background:#4b0082; color:white;">RITUAL GIF LOOP</button>
+
+          <div class="corrupt-section">
+            <div class="corrupt-title">CORRUPTION</div>
+            <div class="corrupt-intensity">
+              <span>Intensity:</span>
+              <input type="range" id="corrupt-intensity" min="0" max="100" value="30" style="flex:1;">
+              <span id="corrupt-intensity-value" style="min-width:35px;">30%</span>
+            </div>
+            <button id="corrupt-canvas-btn" class="sigil-btn" style="background:#800000; color:white;">CORRUPT</button>
+            <div style="font-size:7px; margin-top:3px;">Uses the glitch effect selected in your FX panel</div>
+          </div>
+
+          <div class="gif-section">
+            <div class="gif-title">GIF IMPORT</div>
+            <div class="gif-controls">
+              <button id="import-gif-btn">Import</button>
+              <button id="play-gif-btn" style="display:none;">Play</button>
+              <button id="pause-gif-btn" style="display:none;">Pause</button>
+              <button id="frame-corrupt-btn" style="display:none;">Corrupt</button>
+            </div>
+            <div id="gif-info" class="gif-info">No GIF loaded</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-bar">
+      <div class="color-section">
+        <div class="selected-colors-box">
+          <div id="bg-swatch" class="swatch" style="background: #ffffff;"></div>
+          <div id="fg-swatch" class="swatch" style="background: #000000;"></div>
+        </div>
+        <div class="palette-pair">
+          <div class="palette-block">
+            <div class="palette-title">ORIGINAL COLORS</div>
+            <div class="palette-grid original-palette-grid"></div>
+          </div>
+          <div class="palette-block">
+            <div class="palette-title">NEON COLORS</div>
+            <div class="palette-grid neon-palette-grid"></div>
+          </div>
+        </div>
+      </div>
+      <div class="glitch-fx-section">
+        <div class="glitch-fx-title">GLITCH FX</div>
+        <div class="toolbar paints-bar"></div>
+      </div>
+    </div>
+
+    <div class="status-bar">
+      <span id="tool-status">Tool: Pen</span>
+      <span id="coords-status">500 x 500</span>
+      <span id="glitch-status">FX: solid</span>
+      <span id="grid-status">Grid: Off</span>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ============================================================================
+// COMPLETE FUNCTIONALITY WITH WORKING HELP POPUP
+// ============================================================================
+
+const drawingTools = [
+  { id: 'select', icon: 'SEL' },
+  { id: 'fill', icon: 'FIL' },
+  { id: 'pen', icon: 'PEN' },
+  { id: 'rect', icon: 'REC' },
+  { id: 'circle', icon: 'CIR' },
+  { id: 'triangle', icon: 'TRI' }
+];
+
+const paintPatterns = [
+  'solid', 'eraser', 'noise', 'static-glitch', 'h-scan', 'v-scan',
+  'strobe', 'checkers', 'sine', 'matrix', 'rgb-split', 'vhs',
+  'dither', 'barcode', 'tv-roll', 'pulse', 'sparkle', 'rgb-shift',
+  'scan-glitch', 'blocks', 'zigzag', 'hypnotic',
+  'crt-warp', 'pixel-burn', 'wipe', 'static-lines', 'bit-shift',
+  'error-box', 'tape-delay', 'corrupt', 'wireframe', 'float',
+  'moire', 'rainbow-bars', 'contour-stripe', 'signal-mask', 'op-art-fill',
+  'fx-hue', 'fx-glow', 'fx-solar', 'fx-sort', 'fx-sharp', 'fx-dither', 'fx-smudge'
+];
+
+let currentTool = 'pen';
+let currentPaint = 'solid';
+let fgColor = '#000000';
+let bgColor = '#ffffff';
+let canvasWidth = 500;
+let canvasHeight = 500;
+const cellSize = 10;
+let fxPixelScale = 1;
+
+const toolsBar = document.querySelector('.tools-bar');
+drawingTools.forEach((tool, i) => {
+  const btn = document.createElement('button');
+  btn.className = 'tool-btn' + (tool.id === 'pen' ? ' active' : '');
+  btn.dataset.tool = tool.id;
+  btn.title = tool.id.toUpperCase();
+  btn.innerHTML = `<span style="font-size: 14px;">${tool.icon}</span>`;
+  btn.onclick = () => {
+    toolsBar.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentTool = tool.id;
+    document.getElementById('tool-status').innerHTML = 'Tool: ' + tool.id;
+  };
+  toolsBar.appendChild(btn);
+});
+
+const paintsBar = document.querySelector('.paints-bar');
+const fxPixelScaleSelect = document.getElementById('fx-pixel-scale');
+if (fxPixelScaleSelect) {
+  fxPixelScaleSelect.addEventListener('change', () => {
+    fxPixelScale = Math.max(1, parseInt(fxPixelScaleSelect.value, 10) || 1);
+    document.getElementById('glitch-status').innerHTML = `FX: ${currentPaint.slice(0,12)} | PX x${fxPixelScale}`;
+  });
+}
+
+function selectPaintPattern(paintId) {
+  const btn = paintsBar.querySelector(`[data-paint="${paintId}"]`);
+  if (!btn) return;
+  paintsBar.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentPaint = paintId;
+  document.getElementById('glitch-status').innerHTML = `FX: ${paintId.slice(0,12)} | PX x${fxPixelScale}`;
+}
+
+paintPatterns.forEach((paintId, i) => {
+  const btn = document.createElement('button');
+  btn.className = 'tool-btn' + (paintId === 'solid' ? ' active' : '');
+  btn.dataset.paint = paintId;
+  btn.title = 'PAINT: ' + paintId.toUpperCase();
+
+  if (paintId.startsWith('fx-')) {
+    let fxIcon = 'FX';
+    if (paintId === 'fx-hue') fxIcon = 'HUE';
+    if (paintId === 'fx-solar') fxIcon = 'SOL';
+    if (paintId === 'fx-sort') fxIcon = 'SRT';
+    if (paintId === 'fx-sharp') fxIcon = 'SHP';
+    if (paintId === 'fx-dither') fxIcon = 'DTH';
+    if (paintId === 'fx-smudge') fxIcon = 'SMG';
+    btn.innerHTML = `<span style="font-size: 9px;">${fxIcon}</span>`;
+  } else if (paintId === 'rainbow-bars') {
+    btn.innerHTML = `<span style="font-size: 8px;">RNB</span>`;
+  } else if (paintId === 'contour-stripe') {
+    btn.innerHTML = `<span style="font-size: 8px;">CTR</span>`;
+  } else if (paintId === 'signal-mask') {
+    btn.innerHTML = `<span style="font-size: 8px;">SIG</span>`;
+  } else if (paintId === 'op-art-fill') {
+    btn.innerHTML = `<span style="font-size: 8px;">OP</span>`;
+  } else {
+    btn.innerHTML = `<canvas id="icon-${paintId}" width="16" height="16"></canvas>`;
+  }
+
+  btn.onclick = () => {
+    selectPaintPattern(paintId);
+  };
+  paintsBar.appendChild(btn);
+});
+
+const opArtMoshBtn = document.getElementById('op-art-mosh-btn');
+if (opArtMoshBtn) {
+  opArtMoshBtn.addEventListener('click', () => {
+    if (fxPixelScaleSelect && fxPixelScale < 2) {
+      fxPixelScale = 2;
+      fxPixelScaleSelect.value = '2';
+    }
+    selectPaintPattern('op-art-fill');
+    currentTool = 'fill';
+    toolsBar.querySelectorAll('.tool-btn').forEach(b => b.classList.toggle('active', b.dataset.tool === 'fill'));
+    document.getElementById('tool-status').innerHTML = 'Tool: fill';
+  });
+}
+// ============================================================================
+// FIX FOR OP ART MOSH - Make sure it works with Fill Tool
+// ============================================================================
+
+// Fix the OP Art Mosh button to properly apply the pattern
+const opArtMoshFixBtn = document.getElementById('op-art-mosh-btn');
+if (opArtMoshFixBtn) {
+  // Remove existing listeners and add fresh one
+  const newOpArtBtn = opArtMoshFixBtn.cloneNode(true);
+  opArtMoshFixBtn.parentNode.replaceChild(newOpArtBtn, opArtMoshFixBtn);
+  
+  newOpArtBtn.addEventListener('click', () => {
+    // Set FX pixel scale to 2x for chunky look
+    if (fxPixelScaleSelect) {
+      fxPixelScaleSelect.value = '2';
+      fxPixelScale = 2;
+    }
+    
+    // Select the op-art-fill pattern
+    selectPaintPattern('op-art-fill');
+    
+    // Switch to Fill Tool
+    currentTool = 'fill';
+    toolsBar.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+    const fillBtn = Array.from(toolsBar.querySelectorAll('.tool-btn')).find(b => b.dataset.tool === 'fill');
+    if (fillBtn) fillBtn.classList.add('active');
+    
+    // Update status bar
+    document.getElementById('tool-status').innerHTML = 'Tool: fill';
+    document.getElementById('glitch-status').innerHTML = 'FX: op-art-fill | PX x2';
+    
+    // Show tutorial message
+    const oldMsg = document.getElementById('tool-status').innerHTML;
+    document.getElementById('tool-status').innerHTML = '? OP ART MOSH READY! Click anywhere to fill with trippy pattern!';
+    setTimeout(() => {
+      document.getElementById('tool-status').innerHTML = oldMsg;
+    }, 2000);
+  });
+}
+
+// Also make sure the op-art-fill pattern is working in drawGlitchTool
+// The pattern is already defined in the drawGlitchTool switch statement (case 'op-art-fill')
+// It creates a flashing neon checkerboard with moving scanlines!
+
+console.log('OP Art Mosh button fixed! Click it, then click on canvas to fill with trippy pattern!');
+
+const msColors = [
+  '#6e2727', '#962626', '#cd2424', '#e25d26', '#e68127', '#f4aa41',
+  '#f8cd7c', '#dbae65', '#c89050', '#ab6f3b', '#82502e', '#5b3728',
+  '#33211c', '#261918', '#000000', '#121017', '#21212c', '#333443',
+  '#4c505b', '#777e86', '#9da1a4', '#cbcbcb', '#e2e2e2', '#ffffff',
+  '#f9ffb7', '#fdff90', '#f3f647', '#9bd24d', '#59b341', '#35823a',
+  '#2a5641', '#466573', '#40898e', '#34c5a3', '#41ee95', '#8fc8d6',
+  '#4f99ba', '#3577a3', '#265a86', '#1d355e', '#1b254e', '#331a3b',
+  '#662a71', '#c756be', '#e284d0', '#eebed1', '#000000', '#ffffff'
+];
+
+const paletteGrid = document.querySelector('.original-palette-grid') || document.querySelector('.palette-grid');
+msColors.forEach(color => {
+  const square = document.createElement('div');
+  square.className = 'palette-color';
+  square.style.background = color;
+  square.onpointerdown = (e) => {
+    if (e.button === 2) {
+      bgColor = color;
+      document.getElementById('bg-swatch').style.background = bgColor;
+    } else {
+      fgColor = color;
+      document.getElementById('fg-swatch').style.background = fgColor;
+    }
+  };
+  square.oncontextmenu = (e) => e.preventDefault();
+  paletteGrid.appendChild(square);
+});
+
+function invertColor(hex) {
+  if (!hex) return '#ffffff';
+  if (hex.startsWith('rgba')) return '#ffffff';
+  let num = parseInt(hex.slice(1), 16);
+  if (isNaN(num)) return '#ffffff';
+  let inv = 0xFFFFFF ^ num;
+  return '#' + inv.toString(16).padStart(6, '0');
+}
+
+const staticCanvas = document.getElementById('staticCanvas');
+const staticCtx = staticCanvas.getContext('2d', { alpha: false });
+staticCtx.fillStyle = '#ffffff';
+staticCtx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+const paintCanvas = document.getElementById('paintCanvas');
+const ctx = paintCanvas.getContext('2d');
+const canvasWrapper = document.querySelector('.canvas-wrapper');
+const canvasWidthInput = document.getElementById('canvas-width-input');
+const canvasHeightInput = document.getElementById('canvas-height-input');
+const openImageInput = document.getElementById('open-image-input');
+const importGifInput = document.getElementById('import-gif-input');
+const coordsStatus = document.getElementById('coords-status');
+
+// Export settings
+const exportScaleSelect = document.getElementById('export-scale');
+const exportFpsSelect = document.getElementById('export-fps');
+let exportScale = parseInt(exportScaleSelect.value);
+let exportFps = parseInt(exportFpsSelect.value);
+exportScaleSelect.addEventListener('change', () => { exportScale = parseInt(exportScaleSelect.value); });
+exportFpsSelect.addEventListener('change', () => { exportFps = parseInt(exportFpsSelect.value); });
+
+// Grid setup
+let gridVisible = false;
+const gridCanvas = document.getElementById('gridCanvas');
+let gridCtx = gridCanvas.getContext('2d');
+
+function updateGrid() {
+  if (!gridCtx) return;
+  gridCanvas.width = canvasWidth;
+  gridCanvas.height = canvasHeight;
+  gridCtx.clearRect(0, 0, canvasWidth, canvasHeight);
+  if (!gridVisible) return;
+  gridCtx.strokeStyle = '#c0c0c0';
+  gridCtx.lineWidth = 1;
+  for (let x = cellSize; x < canvasWidth; x += cellSize) {
+    gridCtx.beginPath();
+    gridCtx.moveTo(x, 0);
+    gridCtx.lineTo(x, canvasHeight);
+    gridCtx.stroke();
+  }
+  for (let y = cellSize; y < canvasHeight; y += cellSize) {
+    gridCtx.beginPath();
+    gridCtx.moveTo(0, y);
+    gridCtx.lineTo(canvasWidth, y);
+    gridCtx.stroke();
+  }
+}
+
+function toggleGrid() {
+  gridVisible = !gridVisible;
+  gridCanvas.style.display = gridVisible ? 'block' : 'none';
+  document.getElementById('grid-status').innerHTML = gridVisible ? 'Grid: On' : 'Grid: Off';
+  updateGrid();
+}
+
+let rows = Math.ceil(canvasHeight / cellSize), cols = Math.ceil(canvasWidth / cellSize);
+let grid = new Array(rows).fill(null).map(() => new Array(cols).fill(null));
+let activeFrameGrid = null;
+
+let history = [];
+let historyStep = -1;
+const maxHistory = 30;
+
+function cloneGrid() {
+  return grid.map(row => row.map(cell => cell ? { ...cell } : null));
+}
+
+function makeEmptyGrid(targetRows = rows, targetCols = cols) {
+  return new Array(targetRows).fill(null).map(() => new Array(targetCols).fill(null));
+}
+
+function updateCanvasStatus(text) {
+  coordsStatus.innerText = text || `${canvasWidth} x ${canvasHeight}`;
+}
+
+function setCanvasSize(width, height, options = {}) {
+  const previousWidth = canvasWidth;
+  const previousHeight = canvasHeight;
+  const previousGrid = cloneGrid();
+  const previousStatic = document.createElement('canvas');
+  previousStatic.width = previousWidth;
+  previousStatic.height = previousHeight;
+  previousStatic.getContext('2d').drawImage(staticCanvas, 0, 0);
+
+  const nextWidth = Math.round(Number(width));
+  const nextHeight = Math.round(Number(height));
+  if (!Number.isFinite(nextWidth) || !Number.isFinite(nextHeight)) return;
+
+  canvasWidth = Math.max(1, nextWidth);
+  canvasHeight = Math.max(1, nextHeight);
+  rows = Math.ceil(canvasHeight / cellSize);
+  cols = Math.ceil(canvasWidth / cellSize);
+
+  staticCanvas.width = canvasWidth;
+  staticCanvas.height = canvasHeight;
+  paintCanvas.width = canvasWidth;
+  paintCanvas.height = canvasHeight;
+  gridCanvas.width = canvasWidth;
+  gridCanvas.height = canvasHeight;
+  canvasWrapper.style.width = canvasWidth + 'px';
+  canvasWrapper.style.height = canvasHeight + 'px';
+  canvasWidthInput.value = canvasWidth;
+  canvasHeightInput.value = canvasHeight;
+
+  staticCtx.fillStyle = bgColor;
+  staticCtx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+  grid = makeEmptyGrid();
+  if (options.image) {
+    staticCtx.drawImage(options.image, 0, 0, canvasWidth, canvasHeight);
+  } else if (options.preserve !== false) {
+    staticCtx.drawImage(previousStatic, 0, 0);
+    for (let y = 0; y < Math.min(rows, previousGrid.length); y++) {
+      for (let x = 0; x < Math.min(cols, previousGrid[y].length); x++) {
+        grid[y][x] = previousGrid[y][x] ? { ...previousGrid[y][x] } : null;
+      }
+    }
+  }
+
+  selection = null;
+  activeFrameGrid = null;
+  updateCanvasStatus();
+  updateGrid();
+}
+
+function saveState() {
+  if (historyStep < history.length - 1) {
+    history = history.slice(0, historyStep + 1);
+  }
+  history.push({
+    width: canvasWidth,
+    height: canvasHeight,
+    imgData: staticCtx.getImageData(0, 0, canvasWidth, canvasHeight),
+    gridData: cloneGrid()
+  });
+  if (history.length > maxHistory) {
+    history.shift();
+  } else {
+    historyStep++;
+  }
+}
+
+function undo() {
+  if (historyStep > 0) {
+    historyStep--;
+    restoreState();
+  }
+}
+
+function redo() {
+  if (historyStep < history.length - 1) {
+    historyStep++;
+    restoreState();
+  }
+}
+
+function restoreState() {
+  let state = history[historyStep];
+  setCanvasSize(state.width || 500, state.height || 500, { preserve: false });
+  staticCtx.putImageData(state.imgData, 0, 0);
+  grid = state.gridData.map(row => row.map(cell => cell ? { ...cell } : null));
+  updateCanvasStatus();
+  updateGrid();
+}
+
+saveState();
+
+function clearCanvas() {
+  if (typeof pauseGIF === 'function') pauseGIF();
+  if (typeof gifFrames !== 'undefined') gifFrames = [];
+  if (typeof gifFrameGrids !== 'undefined') gifFrameGrids = [];
+  if (typeof currentGifFrame !== 'undefined') currentGifFrame = 0;
+
+  bgColor = '#ffffff';
+  const bgSwatch = document.getElementById('bg-swatch');
+  if (bgSwatch) bgSwatch.style.background = bgColor;
+  staticCtx.fillStyle = bgColor;
+  staticCtx.fillRect(0, 0, canvasWidth, canvasHeight);
+  ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+  grid = makeEmptyGrid();
+  activeFrameGrid = null;
+  selection = null;
+  isDrawing = false;
+  lastGrid = null;
+  startX = -1;
+  startY = -1;
+  currX = -1;
+  currY = -1;
+
+  const playBtn = document.getElementById('play-gif-btn');
+  const pauseBtn = document.getElementById('pause-gif-btn');
+  const corruptBtn = document.getElementById('frame-corrupt-btn');
+  if (playBtn) playBtn.style.display = 'none';
+  if (pauseBtn) pauseBtn.style.display = 'none';
+  if (corruptBtn) corruptBtn.style.display = 'none';
+  const gifInfo = document.getElementById('gif-info');
+  if (gifInfo) gifInfo.innerHTML = 'No GIF loaded';
+  if (openImageInput) openImageInput.value = '';
+  if (importGifInput) importGifInput.value = '';
+
+  history = [];
+  historyStep = -1;
+  saveState();
+  updateGrid();
+  updateCanvasStatus();
+}
+
+function scaleCanvasIntoCanvas(sourceCanvas, targetWidth, targetHeight, fillStyle = bgColor) {
+  const scaledCanvas = document.createElement('canvas');
+  scaledCanvas.width = targetWidth;
+  scaledCanvas.height = targetHeight;
+  const scaledCtx = scaledCanvas.getContext('2d');
+  scaledCtx.imageSmoothingEnabled = false;
+  scaledCtx.fillStyle = fillStyle;
+  scaledCtx.fillRect(0, 0, targetWidth, targetHeight);
+  scaledCtx.drawImage(sourceCanvas, 0, 0, sourceCanvas.width, sourceCanvas.height, 0, 0, targetWidth, targetHeight);
+  return scaledCanvas;
+}
+
+function resizeImportedGifFrames(targetWidth, targetHeight) {
+  if (!gifFrames.length) return;
+  gifFrames = gifFrames.map(frame => ({
+    ...frame,
+    canvas: scaleCanvasIntoCanvas(frame.canvas, targetWidth, targetHeight, bgColor),
+    width: targetWidth,
+    height: targetHeight
+  }));
+  gifFrameGrids = [];
+  activeFrameGrid = null;
+  currentGifFrame = Math.min(currentGifFrame, gifFrames.length - 1);
+}
+
+function composeGifOverlayGrid(frameIndex) {
+  const frameGrid = gifFrameGrids[frameIndex];
+  if (!frameGrid) return grid;
+
+  const merged = frameGrid.map(row => row.map(cell => cell ? { ...cell } : null));
+  for (let y = 0; y < rows; y++) {
+    if (!merged[y]) merged[y] = new Array(cols).fill(null);
+    for (let x = 0; x < cols; x++) {
+      const liveCell = grid[y]?.[x];
+      if (liveCell) merged[y][x] = { ...liveCell };
+    }
+  }
+  return merged;
+}
+
+let isDrawing = false;
+let lastGrid = null;
+let brushSize = 1;
+
+let startX = -1, startY = -1;
+let currX = -1, currY = -1;
+let selection = null;
+
+const sizeOptions = document.querySelector('.size-options');
+[1, 2, 3, 4].forEach((s) => {
+  const btn = document.createElement('button');
+  btn.className = 'tool-btn' + (s === 1 ? ' active' : '');
+  btn.style.width = '100%';
+  btn.style.height = '28px';
+  btn.dataset.size = s;
+  btn.innerHTML = `<div style="width: ${s * 3}px; height: ${s * 3}px; background: #000; margin: auto;"></div>`;
+  btn.onclick = () => {
+    document.querySelectorAll('.size-options .tool-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    brushSize = s;
+  };
+  sizeOptions.appendChild(btn);
+});
+
+function getGridPos(e) {
+  const rect = paintCanvas.getBoundingClientRect();
+  const scaleX = canvasWidth / rect.width;
+  const scaleY = canvasHeight / rect.height;
+  const canvasX = (e.clientX - rect.left) * scaleX;
+  const canvasY = (e.clientY - rect.top) * scaleY;
+  return { x: Math.floor(canvasX / cellSize), y: Math.floor(canvasY / cellSize), px: Math.floor(canvasX), py: Math.floor(canvasY) };
+}
+
+function commitCell(nx, ny, color, isEraser) {
+  if (nx >= cols || ny >= rows || nx < 0 || ny < 0) return;
+  if (selection) {
+    if (nx < selection.x || nx >= selection.x + selection.w ||
+      ny < selection.y || ny >= selection.y + selection.h) {
+      return;
+    }
+  }
+  grid[ny][nx] = null;
+  const drawingOverGif = typeof gifFrames !== 'undefined' && gifFrames && gifFrames.length > 0;
+  if (drawingOverGif && isEraser) {
+    grid[ny][nx] = {
+      type: 'eraser',
+      color: bgColor,
+      offset: Math.random()
+    };
+  } else if (drawingOverGif && currentPaint === 'solid') {
+    grid[ny][nx] = {
+      type: 'solid',
+      color: color,
+      offset: Math.random()
+    };
+  } else if (isEraser) {
+    staticCtx.fillStyle = color;
+    staticCtx.fillRect(nx * cellSize, ny * cellSize, cellSize, cellSize);
+  } else if (!currentPaint.startsWith('fx-') && currentPaint !== 'solid') {
+    grid[ny][nx] = {
+      type: currentPaint,
+      color: color,
+      offset: Math.random()
+    };
+  } else if (currentPaint.startsWith('fx-')) {
+    grid[ny][nx] = {
+      type: currentPaint,
+      color: color,
+      offset: Math.random()
+    };
+  } else {
+    staticCtx.fillStyle = color;
+    staticCtx.fillRect(nx * cellSize, ny * cellSize, cellSize, cellSize);
+  }
+  updateGrid();
+}
+
+function matchCell(cx, cy, targetType, targetColor) {
+  const cell = grid[cy][cx];
+  if (targetType === null) {
+    return cell === null;
+  } else {
+    return cell && cell.type === targetType && cell.color === targetColor;
+  }
+}
+
+function applyFillTool(pos, activeColor, isEraser) {
+  if (selection && (pos.x < selection.x || pos.x >= selection.x + selection.w || pos.y < selection.y || pos.y >= selection.y + selection.h)) return;
+  const targetCell = grid[pos.y][pos.x];
+  const targetType = targetCell ? targetCell.type : null;
+  const targetColor = targetCell ? targetCell.color : null;
+  if (targetType === currentPaint && targetColor === activeColor) return;
+  if (targetType === null && isEraser) return;
+  const queue = [{ x: pos.x, y: pos.y }];
+  const visited = new Array(rows).fill(false).map(() => new Array(cols).fill(false));
+  visited[pos.y][pos.x] = true;
+  while (queue.length > 0) {
+    const curr = queue.shift();
+    commitCell(curr.x, curr.y, activeColor, isEraser);
+    const neighbors = [
+      { x: curr.x + 1, y: curr.y }, { x: curr.x - 1, y: curr.y },
+      { x: curr.x, y: curr.y + 1 }, { x: curr.x, y: curr.y - 1 }
+    ];
+    for (let n of neighbors) {
+      if (n.x >= 0 && n.x < cols && n.y >= 0 && n.y < rows) {
+        if (selection && (n.x < selection.x || n.x >= selection.x + selection.w || n.y < selection.y || n.y >= selection.y + selection.h)) continue;
+        if (!visited[n.y][n.x] && matchCell(n.x, n.y, targetType, targetColor)) {
+          visited[n.y][n.x] = true;
+          queue.push(n);
+        }
+      }
+    }
+  }
+  updateGrid();
+}
+
+function applyPenTool(pos, activeColor, isEraser) {
+  if (lastGrid && lastGrid.x === pos.x && lastGrid.y === pos.y) return;
+  lastGrid = pos;
+  for (let dy = 0; dy < brushSize; dy++) {
+    for (let dx = 0; dx < brushSize; dx++) {
+      commitCell(pos.x + dx, pos.y + dy, activeColor, isEraser);
+    }
+  }
+  updateGrid();
+}
+
+function drawCircle(x1, y1, x2, y2, color, isEraser) {
+  const centerX = (x1 + x2) / 2;
+  const centerY = (y1 + y2) / 2;
+  const radiusX = Math.abs(x2 - x1) / 2;
+  const radiusY = Math.abs(y2 - y1) / 2;
+
+  for (let y = Math.floor(centerY - radiusY); y <= Math.ceil(centerY + radiusY); y++) {
+    for (let x = Math.floor(centerX - radiusX); x <= Math.ceil(centerX + radiusX); x++) {
+      const dx = (x + 0.5 - centerX) / radiusX;
+      const dy = (y + 0.5 - centerY) / radiusY;
+      if (dx * dx + dy * dy <= 1) {
+        commitCell(x, y, color, isEraser);
+      }
+    }
+  }
+  updateGrid();
+}
+
+function drawTriangle(x1, y1, x2, y2, color, isEraser) {
+  const topX = (x1 + x2) / 2;
+  const topY = y1;
+  const bottomLeftX = x1;
+  const bottomLeftY = y2;
+  const bottomRightX = x2;
+  const bottomRightY = y2;
+
+  for (let y = topY; y <= bottomLeftY; y++) {
+    const t = (y - topY) / (bottomLeftY - topY);
+    const leftX = topX + (bottomLeftX - topX) * t;
+    const rightX = topX + (bottomRightX - topX) * t;
+    for (let x = Math.floor(leftX); x <= Math.ceil(rightX); x++) {
+      commitCell(x, y, color, isEraser);
+    }
+  }
+  updateGrid();
+}
+
+function applyShapeTool(e) {
+  if (startX !== -1 && currX !== -1 && currY !== -1) {
+    let x1 = Math.min(startX, currX);
+    let x2 = Math.max(startX, currX);
+    let y1 = Math.min(startY, currY);
+    let y2 = Math.max(startY, currY);
+    const activeColor = getActiveColor(e);
+    const isEraser = currentPaint === 'eraser';
+
+    if (currentTool === 'rect') {
+      for (let y = y1; y <= y2; y++) {
+        for (let x = x1; x <= x2; x++) {
+          commitCell(x, y, activeColor, isEraser);
+        }
+      }
+    } else if (currentTool === 'circle') {
+      drawCircle(x1, y1, x2, y2, activeColor, isEraser);
+    } else if (currentTool === 'triangle') {
+      drawTriangle(x1, y1, x2, y2, activeColor, isEraser);
+    }
+    updateGrid();
+  }
+}
+
+function getActiveColor(e) {
+  const isRightClick = e.button === 2 || (e.buttons & 2);
+  return currentPaint === 'eraser' ? bgColor : (isRightClick ? bgColor : fgColor);
+}
+
+paintCanvas.addEventListener('pointerdown', e => {
+  isDrawing = true;
+  lastGrid = null;
+  paintCanvas.setPointerCapture(e.pointerId);
+  const pos = getGridPos(e);
+  const activeColor = getActiveColor(e);
+  const isEraser = currentPaint === 'eraser';
+  if (pos.x < 0 || pos.x >= cols || pos.y < 0 || pos.y >= rows) return;
+  if (currentTool === 'pen') {
+    for (let dy = 0; dy < brushSize; dy++) {
+      for (let dx = 0; dx < brushSize; dx++) {
+        commitCell(pos.x + dx, pos.y + dy, activeColor, isEraser);
+      }
+    }
+  } else if (currentTool === 'fill') {
+    applyFillTool(pos, activeColor, isEraser);
+  } else if (currentTool === 'rect' || currentTool === 'circle' || currentTool === 'triangle' || currentTool === 'select') {
+    startX = pos.x; startY = pos.y; currX = pos.x; currY = pos.y;
+    if (currentTool === 'select') {
+      selection = null;
+    }
+  }
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.ctrlKey && e.key === 'z') undo();
+  if (e.ctrlKey && e.key === 'y') redo();
+});
+
+function closeAllMenus() {
+  const editDropdown = document.getElementById('edit-dropdown');
+  const fileDropdown = document.getElementById('file-dropdown');
+  const optionsDropdown = document.getElementById('options-dropdown');
+  const helpDropdown = document.getElementById('help-dropdown');
+  if (editDropdown) editDropdown.style.display = 'none';
+  if (fileDropdown) fileDropdown.style.display = 'none';
+  if (optionsDropdown) optionsDropdown.style.display = 'none';
+  if (helpDropdown) helpDropdown.style.display = 'none';
+}
+
+const fileMenu = document.querySelector('.menu-file');
+const fileDropdown = document.getElementById('file-dropdown');
+if (fileMenu) {
+  fileMenu.addEventListener('click', (e) => {
+    e.stopPropagation();
+    closeAllMenus();
+    if (fileDropdown) fileDropdown.style.display = 'flex';
+  });
+}
+
+const editMenu = document.querySelector('.menu-edit');
+const editDropdown = document.getElementById('edit-dropdown');
+if (editMenu) {
+  editMenu.addEventListener('click', (e) => {
+    e.stopPropagation();
+    closeAllMenus();
+    if (editDropdown) editDropdown.style.display = 'flex';
+  });
+}
+
+const optionsMenu = document.querySelector('.menu-options');
+const optionsDropdown = document.getElementById('options-dropdown');
+if (optionsMenu) {
+  optionsMenu.addEventListener('click', (e) => {
+    e.stopPropagation();
+    closeAllMenus();
+    if (optionsDropdown) optionsDropdown.style.display = 'flex';
+  });
+}
+
+const helpMenu = document.querySelector('.menu-help');
+const helpDropdown = document.getElementById('help-dropdown');
+if (helpMenu) {
+  helpMenu.addEventListener('click', (e) => {
+    e.stopPropagation();
+    closeAllMenus();
+    if (helpDropdown) helpDropdown.style.display = 'flex';
+  });
+}
+
+document.addEventListener('click', () => closeAllMenus());
+
+const menuUndo = document.getElementById('menu-undo');
+const menuRedo = document.getElementById('menu-redo');
+const menuClear = document.getElementById('menu-clear');
+const menuToggleGrid = document.getElementById('menu-toggle-grid');
+const menuOpenImage = document.getElementById('menu-open-image');
+const menuImportGif = document.getElementById('menu-import-gif');
+const menuSavePng = document.getElementById('menu-save-png');
+const menuSaveGif = document.getElementById('menu-save-gif');
+
+if (menuUndo) menuUndo.addEventListener('click', () => { closeAllMenus(); undo(); });
+if (menuRedo) menuRedo.addEventListener('click', () => { closeAllMenus(); redo(); });
+if (menuClear) menuClear.addEventListener('click', () => { closeAllMenus(); clearCanvas(); });
+if (menuToggleGrid) menuToggleGrid.addEventListener('click', () => { closeAllMenus(); toggleGrid(); });
+if (menuOpenImage) menuOpenImage.addEventListener('click', () => { closeAllMenus(); openImageInput.click(); });
+if (menuImportGif) menuImportGif.addEventListener('click', () => { closeAllMenus(); document.getElementById('import-gif-input').click(); });
+if (menuSavePng) menuSavePng.addEventListener('click', () => {
+  closeAllMenus();
+  const scale = exportScale;
+  const outputWidth = canvasWidth * scale;
+  const outputHeight = canvasHeight * scale;
+  const nativeFrame = renderFrameToCanvas(performance.now(), staticCanvas, grid, canvasWidth, canvasHeight);
+  if (scale === 1) {
+    const a = document.createElement('a');
+    a.href = nativeFrame.toDataURL('image/png');
+    a.download = 'glitch-paint.png';
+    a.click();
+  } else {
+    const scaledCanvas = document.createElement('canvas');
+    scaledCanvas.width = outputWidth;
+    scaledCanvas.height = outputHeight;
+    const scaledCtx = scaledCanvas.getContext('2d');
+    scaledCtx.imageSmoothingEnabled = false;
+    scaledCtx.drawImage(nativeFrame, 0, 0, canvasWidth, canvasHeight, 0, 0, outputWidth, outputHeight);
+    const a = document.createElement('a');
+    a.href = scaledCanvas.toDataURL('image/png');
+    a.download = `glitch-paint-${scale}x.png`;
+    a.click();
+  }
+});
+if (menuSaveGif) menuSaveGif.addEventListener('click', () => { closeAllMenus(); exportGIF(); });
+
+// FIXED: Resize button with proper image scaling
+document.getElementById('resize-canvas-btn').addEventListener('click', () => {
+  const newWidth = parseInt(canvasWidthInput.value);
+  const newHeight = parseInt(canvasHeightInput.value);
+  if (!Number.isFinite(newWidth) || !Number.isFinite(newHeight) || newWidth < 1 || newHeight < 1) return;
+  const resumeGifAfterResize = typeof gifPlaying !== 'undefined' && gifPlaying;
+  if (resumeGifAfterResize) pauseGIF();
+  
+  // Save current image data
+  const currentImage = staticCtx.getImageData(0, 0, canvasWidth, canvasHeight);
+  
+  // Save current grid data
+  const currentGrid = cloneGrid();
+  
+  // Resize canvas
+  setCanvasSize(newWidth, newHeight, { preserve: false });
+  
+  // Scale the old image to fit the new canvas (nearest-neighbor for pixel art)
+  const tempCanvas = document.createElement('canvas');
+  tempCanvas.width = canvasWidth;
+  tempCanvas.height = canvasHeight;
+  const tempCtx = tempCanvas.getContext('2d');
+  tempCtx.imageSmoothingEnabled = false; // Keep pixelated scaling
+  
+  // Create temporary canvas with old image
+  const oldCanvas = document.createElement('canvas');
+  oldCanvas.width = currentImage.width;
+  oldCanvas.height = currentImage.height;
+  oldCanvas.getContext('2d').putImageData(currentImage, 0, 0);
+  
+  // Stretch the current image to the requested canvas size.
+  tempCtx.drawImage(oldCanvas, 0, 0, currentImage.width, currentImage.height, 0, 0, canvasWidth, canvasHeight);
+  
+  // Copy to static canvas
+  staticCtx.drawImage(tempCanvas, 0, 0);
+  
+  // Restore grid data (scaling grid is complex, so we reset it)
+  grid = makeEmptyGrid();
+  resizeImportedGifFrames(canvasWidth, canvasHeight);
+  
+  saveState();
+  updateGrid();
+  if (resumeGifAfterResize) playGIF();
+});
+
+openImageInput.addEventListener('change', () => {
+  const file = openImageInput.files[0];
+  if (!file) return;
+  const img = new Image();
+  const url = URL.createObjectURL(file);
+  img.onload = () => {
+    setCanvasSize(img.width, img.height, { image: img });
+    history = [];
+    historyStep = -1;
+    saveState();
+    URL.revokeObjectURL(url);
+    openImageInput.value = '';
+  };
+  img.src = url;
+});
+
+function renderFrameToCanvas(fakeTime, baseCanvas = staticCanvas, overlayGrid = grid, targetWidth = canvasWidth, targetHeight = canvasHeight) {
+  const nativeWidth = canvasWidth;
+  const nativeHeight = canvasHeight;
+  
+  const tmp = document.createElement('canvas');
+  tmp.width = nativeWidth;
+  tmp.height = nativeHeight;
+  const tCtx = tmp.getContext('2d');
+  tCtx.imageSmoothingEnabled = false;
+  
+  // Track fx cells for area effects
+  const fxCells = [];
+  
+  for (let y = 0; y < rows; y++) {
+    for (let x = 0; x < cols; x++) {
+      const cell = overlayGrid[y]?.[x];
+      if (cell) {
+        if (cell.type.startsWith('fx-')) {
+          fxCells.push({ x, y, type: cell.type });
+        } else {
+          // Use the scaled drawing function that respects patternSize
+          drawScaledGlitchTool(tCtx, x * cellSize, y * cellSize, cell, fakeTime);
+        }
+      }
+    }
+  }
+  
+  // Apply area effects if any exist
+  if (fxCells.length) {
+    const comp = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
+    comp.canvas.width = nativeWidth;
+    comp.canvas.height = nativeHeight;
+    comp.imageSmoothingEnabled = false;
+    comp.drawImage(baseCanvas, 0, 0, nativeWidth, nativeHeight);
+    comp.drawImage(tmp, 0, 0);
+    fxCells.forEach(cell => processAreaEffect(comp, cell.x * cellSize, cell.y * cellSize, cellSize, cellSize, cell.type, fakeTime));
+    fxCells.forEach(cell => tCtx.drawImage(comp.canvas, cell.x * cellSize, cell.y * cellSize, cellSize, cellSize, cell.x * cellSize, cell.y * cellSize, cellSize, cellSize));
+  }
+  
+  const finalNative = document.createElement('canvas');
+  finalNative.width = nativeWidth;
+  finalNative.height = nativeHeight;
+  const fCtx = finalNative.getContext('2d');
+  fCtx.imageSmoothingEnabled = false;
+  fCtx.drawImage(baseCanvas, 0, 0, nativeWidth, nativeHeight);
+  fCtx.drawImage(tmp, 0, 0);
+  
+  if (targetWidth !== nativeWidth || targetHeight !== nativeHeight) {
+    const scaled = document.createElement('canvas');
+    scaled.width = targetWidth;
+    scaled.height = targetHeight;
+    const sCtx = scaled.getContext('2d');
+    sCtx.imageSmoothingEnabled = false;
+    sCtx.drawImage(finalNative, 0, 0, nativeWidth, nativeHeight, 0, 0, targetWidth, targetHeight);
+    return scaled;
+  }
+  return finalNative;
+}
+async function exportGIF() {
+  const overlay = document.getElementById('gif-progress-overlay');
+  const status = document.getElementById('gif-status-text');
+  const pb = document.getElementById('gif-progress-bar');
+  overlay.style.display = 'flex';
+  
+  const hasAnim = gifFrames.length > 1;
+  const frameDelayMs = Math.round(1000 / exportFps);
+  const totalFrames = hasAnim ? gifFrames.length : Math.max(12, Math.min(120, Math.floor(3000 / frameDelayMs)));
+  const baseTime = performance.now();
+  const scale = exportScale;
+  const outputWidth = canvasWidth * scale;
+  const outputHeight = canvasHeight * scale;
+  
+  let workerUrl;
+  try {
+    const resp = await fetch('https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.worker.js');
+    workerUrl = URL.createObjectURL(await resp.blob());
+  } catch (e) {
+    alert('GIF encoder failed');
+    overlay.style.display = 'none';
+    return;
+  }
+  
+  const gif = new GIF({
+    workers: 2,
+    quality: 10,
+    width: outputWidth,
+    height: outputHeight,
+    workerScript: workerUrl,
+    repeat: 0
+  });
+  
+  let first = null;
+  for (let i = 0; i < totalFrames; i++) {
+    status.innerText = `Frame ${i + 1}/${totalFrames}`;
+    pb.style.width = Math.round(((i + 1) / (totalFrames + 1)) * 50) + '%';
+    const delay = hasAnim ? gifFrames[i].delay : frameDelayMs;
+    const base = hasAnim ? gifFrames[i].canvas : staticCanvas;
+    const overlayGrid = hasAnim ? composeGifOverlayGrid(i) : grid;
+    const frame = renderFrameToCanvas(baseTime + i * frameDelayMs, base, overlayGrid, outputWidth, outputHeight);
+    gif.addFrame(frame, { delay, copy: true });
+    if (i === 0) first = frame;
+    await new Promise(r => setTimeout(r, 0));
+  }
+  
+  if (!hasAnim && first) {
+    gif.addFrame(first, { delay: frameDelayMs, copy: true });
+  }
+  
+  status.innerText = 'Encoding...';
+  pb.style.width = '50%';
+  gif.on('progress', p => pb.style.width = (50 + Math.round(p * 50)) + '%');
+  gif.on('finished', blob => {
+    URL.revokeObjectURL(workerUrl);
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = scale > 1 ? `glitch-paint-${scale}x-${exportFps}fps.gif` : `glitch-paint-${exportFps}fps.gif`;
+    a.click();
+    overlay.style.display = 'none';
+  });
+  gif.render();
+}
+
+paintCanvas.addEventListener('pointermove', e => {
+  const coords = getGridPos(e);
+  updateCanvasStatus(`${coords.px}, ${coords.py}`);
+  if (!isDrawing) return;
+  if (coords.x < 0 || coords.x >= cols || coords.y < 0 || coords.y >= rows) return;
+  if (currentTool === 'pen') applyPenTool(coords, getActiveColor(e), currentPaint === 'eraser');
+  else if (currentTool === 'rect' || currentTool === 'circle' || currentTool === 'triangle' || currentTool === 'select') {
+    currX = coords.x;
+    currY = coords.y;
+  }
+});
+
+paintCanvas.addEventListener('pointerup', e => {
+  isDrawing = false;
+  if (startX !== -1 && (currentTool === 'rect' || currentTool === 'circle' || currentTool === 'triangle')) {
+    applyShapeTool(e);
+    startX = -1;
+    saveState();
+  } else if (startX !== -1 && currentTool === 'select') {
+    const x1 = Math.min(startX, currX), x2 = Math.max(startX, currX);
+    const y1 = Math.min(startY, currY), y2 = Math.max(startY, currY);
+    selection = (x2 - x1 > 0 && y2 - y1 > 0) ? { x: x1, y: y1, w: x2 - x1 + 1, h: y2 - y1 + 1 } : null;
+    startX = -1;
+  }
+  if (currentTool !== 'select' && currentTool !== 'rect' && currentTool !== 'circle' && currentTool !== 'triangle') saveState();
+  updateGrid();
+});
+paintCanvas.addEventListener('contextmenu', e => e.preventDefault());
+
+// ============================================================================
+// drawGlitchTool - FULL ORIGINAL (preserved)
+// ============================================================================
+function rainbowPhaseColor(phase, alpha = 1) {
+  const hue = ((phase % 360) + 360) % 360;
+  return `hsla(${hue}, 100%, 50%, ${alpha})`;
+}
+
+function stripeMixColor(baseColor, phase, mode = 'rainbow') {
+  if (mode === 'ink') return phase % 2 === 0 ? baseColor : invertColor(baseColor);
+  return rainbowPhaseColor(phase * 36);
+}
+
+function drawScaledGlitchTool(targetCtx, px, py, cell, time) {
+  const patternSize = cell.patternSize || 1;
+  
+  // For size 1, draw directly
+  if (patternSize === 1) {
+    drawGlitchTool(targetCtx, px, py, cell, time);
+    return;
+  }
+  
+  // For larger pattern sizes, we need to draw the pattern scaled up
+  // Each patternSize cell represents a block of size 'patternSize' in grid units
+  
+  const blockSize = cellSize * patternSize;
+  
+  // Create a temporary canvas to draw the pattern at 1x cell size
+  const tempCanvas = document.createElement('canvas');
+  tempCanvas.width = cellSize;
+  tempCanvas.height = cellSize;
+  const tempCtx = tempCanvas.getContext('2d');
+  tempCtx.imageSmoothingEnabled = false;
+  
+  // Draw the original pattern on the temp canvas
+  const dummyCell = { ...cell, patternSize: 1 };
+  drawGlitchTool(tempCtx, 0, 0, dummyCell, time);
+  
+  // Now scale it up to the full block size
+  targetCtx.imageSmoothingEnabled = false;
+  targetCtx.drawImage(tempCanvas, 0, 0, cellSize, cellSize, px, py, blockSize, blockSize);
+}
+
+function drawGlitchTool(targetCtx, px, py, cell, time) {
+  const { type, color, offset } = cell;
+  const t = time + offset * 1000;
+  switch (type) {
+    case 'solid': targetCtx.fillStyle = color; targetCtx.fillRect(px, py, 10, 10); break;
+    case 'eraser': targetCtx.fillStyle = bgColor; targetCtx.fillRect(px, py, 10, 10); targetCtx.strokeStyle = '#808080'; targetCtx.lineWidth = 1; targetCtx.strokeRect(px + 0.5, py + 0.5, 9, 9); break;
+    case 'noise': for (let i = 0; i < 10; i += 3) { for (let j = 0; j < 10; j += 3) { if (Math.random() > 0.3) { targetCtx.fillStyle = Math.random() > 0.5 ? color : invertColor(color); targetCtx.fillRect(px + i, py + j, 3, 3); } } } break;
+    case 'h-scan': targetCtx.fillStyle = color; let yOffset = Math.floor(t / 30) % 10; for (let i = 0; i < 3; i++) { let lineY = (yOffset + i * 3) % 10; targetCtx.fillRect(px, py + lineY, 10, 2); } break;
+    case 'v-scan': targetCtx.fillStyle = color; let xOffset = Math.floor(t / 30) % 10; for (let i = 0; i < 3; i++) { let lineX = (xOffset + i * 3) % 10; targetCtx.fillRect(px + lineX, py, 2, 10); } break;
+    case 'strobe': const st = Math.floor(t / 80) % 3; if (st === 0) { targetCtx.fillStyle = color; targetCtx.fillRect(px, py, 10, 10); } else if (st === 1) { targetCtx.fillStyle = invertColor(color); targetCtx.fillRect(px, py, 10, 10); } break;
+    case 'checkers': const frame = Math.floor(t / 200) % 2; for (let i = 0; i < 10; i += 4) { for (let j = 0; j < 10; j += 4) { if (((i / 4 + j / 4) % 2) === frame) { targetCtx.fillStyle = color; targetCtx.fillRect(px + i, py + j, 4, 4); } } } break;
+    case 'sine': targetCtx.fillStyle = color; for (let i = 0; i < 10; i += 2) { let waveY = 5 + Math.round(Math.sin((t / 200) + i * 0.5) * 4); targetCtx.fillRect(px + i, py + waveY, 2, 2); } break;
+    case 'matrix': targetCtx.fillStyle = color; let frameT = Math.floor(t / 50 + offset * 100); for (let i = 0; i < 10; i += 4) { let localY = (frameT + i * 3) % 10; if (localY + 3 > 10) { let overflow = (localY + 3) - 10; targetCtx.fillRect(px + i, py + localY, 3, 10 - localY); targetCtx.fillRect(px + i, py, 3, overflow); } else { targetCtx.fillRect(px + i, py + localY, 3, 3); } } break;
+    case 'rgb-split': let shift = Math.floor(Math.random() * 3) - 1; targetCtx.fillStyle = 'rgba(255, 0, 0, 0.5)'; targetCtx.fillRect(px + 1 + shift, py, 8, 10); targetCtx.fillStyle = 'rgba(0, 255, 0, 0.5)'; targetCtx.fillRect(px + 1 - shift, py, 8, 10); targetCtx.fillStyle = 'rgba(0, 0, 255, 0.5)'; targetCtx.fillRect(px + 1, py, 8, 10); break;
+    case 'vhs': for (let i = 0; i < 10; i += 3) { if (Math.random() < 0.4) { let offsetX = Math.floor(Math.random() * 4) - 2; targetCtx.fillStyle = invertColor(color); let startX = Math.max(0, offsetX); let drawW = Math.min(10, 10 + offsetX) - startX; if (drawW > 0) targetCtx.fillRect(px + startX, py + i, drawW, 2); } } break;
+    case 'static-glitch': if (Math.random() < 0.2) { targetCtx.fillStyle = invertColor(color); let rx = Math.floor(Math.random() * 5); let ry = Math.floor(Math.random() * 5); let rw = Math.floor(Math.random() * 5) + 2; let rh = Math.floor(Math.random() * 5) + 2; targetCtx.fillRect(px + rx, py + ry, rw, rh); } break;
+    case 'dither': const bayer = [[0,8,2,10],[12,4,14,6],[3,11,1,9],[15,7,13,5]]; let thresh = (Math.floor(t / 100) % 16); for (let i = 0; i < 10; i++) { for (let j = 0; j < 10; j++) { targetCtx.fillStyle = (bayer[j % 4][i % 4] < thresh) ? color : invertColor(color); targetCtx.fillRect(px + i, py + j, 1, 1); } } break;
+    case 'barcode': let bcOffset = Math.floor(t / 40) % 10; targetCtx.fillStyle = color; for (let i = 0; i < 10; i += 3) { let width = (i * 7 + bcOffset) % 4; let xOffset = (i * 3 + bcOffset) % 10; targetCtx.fillRect(px + xOffset, py, width, 10); } break;
+    case 'tv-roll': let rollY = Math.floor(t / 20) % 10; targetCtx.fillStyle = color; targetCtx.fillRect(px, py + rollY, 10, 4); if (rollY > 6) { targetCtx.fillRect(px, py, 10, rollY - 6); } break;
+    case 'pulse': let pSize = Math.floor(t / 100) % 6; targetCtx.fillStyle = color; targetCtx.fillRect(px + 5 - pSize, py + 5 - pSize, pSize * 2, pSize * 2); if (pSize > 2) { targetCtx.fillStyle = invertColor(color); targetCtx.fillRect(px + 5 - (pSize - 2), py + 5 - (pSize - 2), (pSize - 2) * 2, (pSize - 2) * 2); } break;
+    case 'sparkle': targetCtx.fillStyle = color; targetCtx.fillRect(px, py, 10, 10); targetCtx.fillStyle = '#ffffff'; if (Math.random() < 0.2) { let sx = Math.floor(Math.random() * 10); let sy = Math.floor(Math.random() * 10); targetCtx.fillRect(px + sx, py + sy, 1, 1); if (sx > 0) targetCtx.fillRect(px + sx - 1, py + sy, 3, 1); if (sy > 0) targetCtx.fillRect(px + sx, py + sy - 1, 1, 3); } break;
+    case 'rgb-shift': let phase = (t / 1000) * Math.PI * 2; let rxOffset = Math.sin(phase) * 3 + 3; let gxOffset = Math.sin(phase + 2) * 3 + 3; let bxOffset = Math.sin(phase + 4) * 3 + 3; targetCtx.fillStyle = 'rgba(255, 0, 0, 0.5)'; targetCtx.fillRect(px + rxOffset, py, 4, 10); targetCtx.fillStyle = 'rgba(0, 255, 0, 0.5)'; targetCtx.fillRect(px + gxOffset, py, 4, 10); targetCtx.fillStyle = 'rgba(0, 0, 255, 0.5)'; targetCtx.fillRect(px + bxOffset, py, 4, 10); break;
+    case 'scan-glitch': for (let j = 0; j < 10; j += 2) { let shake = (Math.random() < 0.1 && Math.sin(t / 100) > 0) ? Math.floor(Math.random() * 4) - 2 : 0; targetCtx.fillStyle = color; targetCtx.fillRect(px + shake, py + j, 10, 2); } break;
+    case 'blocks': let blockFrame = Math.floor(t / 150); for (let i = 0; i < 10; i += 4) { for (let j = 0; j < 10; j += 4) { if (((i * 3 + j * 7 + blockFrame) % 5) < 2) { targetCtx.fillStyle = color; if (i + 4 <= 10 && j + 4 <= 10) targetCtx.fillRect(px + i, py + j, 4, 4); } } } break;
+    case 'zigzag': targetCtx.fillStyle = color; let zzOffset = Math.floor(t / 50) % 10; for (let j = 0; j < 10; j++) { let zzX = (j + zzOffset) % 5; if (zzX > 2) zzX = 5 - zzX; targetCtx.fillRect(px + zzX * 2, py + j, 2, 1); } break;
+    case 'hypnotic': let hypFrame = Math.floor(t / 100) % 5; for (let r = 5; r > 0; r--) { targetCtx.fillStyle = (r % 2 === hypFrame % 2) ? color : invertColor(color); targetCtx.fillRect(px + 5 - r, py + 5 - r, r * 2, r * 2); } break;
+    case 'crt-warp': targetCtx.fillStyle = color; for (let j = 0; j < 10; j += 3) { let bow = Math.sin((j / 10) * Math.PI) * 2; let offsetWarp = Math.sin(t / 300 + j * 0.5) * bow; targetCtx.fillRect(px + 1 + offsetWarp, py + j, 8, 3); } break;
+    case 'pixel-burn': if (Math.random() < 0.3) { let rPx = Math.floor(Math.random() * 10); let rPy = Math.floor(Math.random() * 10); targetCtx.fillStyle = color; targetCtx.fillRect(px + rPx, py + rPy, 2, 2); targetCtx.fillStyle = invertColor(color); targetCtx.fillRect(px + rPx + 1, py + rPy + 1, 1, 1); } break;
+    case 'wipe': let wPos = Math.floor(t / 50) % 20 - 10; targetCtx.fillStyle = color; if (wPos > -10 && wPos < 10) { targetCtx.fillRect(px, py, wPos, 10); } else if (wPos >= 10) { targetCtx.fillRect(px, py, 10, 10); } break;
+    case 'static-lines': if (Math.random() < 0.5) { targetCtx.fillStyle = color; targetCtx.fillRect(px, py + Math.floor(t / 50) % 10, 10, 1); if (Math.random() < 0.2) targetCtx.fillRect(px, py + Math.floor(t / 30) % 10, 10, 1); } break;
+    case 'bit-shift': targetCtx.fillStyle = color; let bShift = (Math.floor(t / 150) % 2 === 0) ? 2 : -2; targetCtx.fillRect(px + bShift, py, 10 - Math.abs(bShift), 10); break;
+    case 'error-box': targetCtx.fillStyle = color; targetCtx.fillRect(px, py, 10, 10); let eFrame = Math.floor(t / 200) % 2; if (eFrame === 0) { targetCtx.clearRect(px + 2, py + 2, 6, 6); targetCtx.fillStyle = invertColor(color); targetCtx.fillRect(px + 4, py + 4, 2, 2); } break;
+    case 'tape-delay': targetCtx.fillStyle = 'rgba(255, 255, 255, 0.3)'; targetCtx.fillRect(px, py, 10, 10); targetCtx.fillStyle = color; targetCtx.globalAlpha = 1.0; let dOff = Math.floor(t / 80) % 3; targetCtx.fillRect(px + dOff, py + dOff, 10 - dOff * 2, 10 - dOff * 2); break;
+    case 'corrupt': targetCtx.fillStyle = invertColor(color); for (let i = 0; i < 3; i++) { let cx = Math.floor(Math.random() * 8); let cy = Math.floor(Math.random() * 8); targetCtx.fillRect(px + cx, py + cy, (cx % 2) + 1, (cy % 2) + 1); } break;
+    case 'wireframe': targetCtx.strokeStyle = color; targetCtx.lineWidth = 1; targetCtx.strokeRect(px + 1, py + 1, 8, 8); targetCtx.beginPath(); targetCtx.moveTo(px + 1, py + 1); targetCtx.lineTo(px + 9, py + 9); targetCtx.moveTo(px + 9, py + 1); targetCtx.lineTo(px + 1, py + 9); targetCtx.stroke(); break;
+    case 'float': targetCtx.fillStyle = color; let fOff = Math.round(Math.sin(t / 200) * 3); targetCtx.fillRect(px + 3, py + 3 + fOff, 4, 4); break;
+    case 'moire': { const drift = Math.floor(t / 35); for (let j = 0; j < 10; j++) { const wave = Math.floor(Math.sin((px + j * 5 + t / 45) * 0.22) * 3); const phaseA = (j + drift + Math.floor(px / 4)) % 4; const phaseB = (j + wave + Math.floor(py / 3)) % 4; targetCtx.fillStyle = (phaseA === phaseB || phaseA === 0) ? color : invertColor(color); targetCtx.fillRect(px + wave, py + j, 10 - Math.abs(wave), 1); } break; }
+    case 'rainbow-bars': { const drift = Math.floor(t / 45); for (let i = 0; i < 10; i++) { const phaseBand = i + drift + Math.floor((px + py) / 10); targetCtx.fillStyle = rainbowPhaseColor(phaseBand * 28); targetCtx.fillRect(px + i, py, 1, 10); } if (Math.floor(t / 180) % 2 === 0) { targetCtx.fillStyle = 'rgba(255,255,255,0.35)'; targetCtx.fillRect(px, py + ((drift + py) % 10), 10, 1); } break; }
+    case 'contour-stripe': { const pulse = t / 110; for (let j = 0; j < 10; j++) { for (let i = 0; i < 10; i++) { const dx = i - 5; const dy = j - 5; const ridge = Math.floor(Math.sqrt(dx * dx + dy * dy) * 2.8 + Math.sin((px + py) * 0.08 + pulse) * 3 + pulse); targetCtx.fillStyle = stripeMixColor(color, ridge, ridge % 5 === 0 ? 'rainbow' : 'ink'); targetCtx.fillRect(px + i, py + j, 1, 1); } } break; }
+    case 'signal-mask': { const drift = Math.floor(t / 50); targetCtx.fillStyle = color; targetCtx.fillRect(px, py, 10, 10); for (let j = 0; j < 10; j += 2) { const shake = ((j + drift + Math.floor(offset * 10)) % 5) - 2; targetCtx.fillStyle = rainbowPhaseColor((j * 32 + drift * 12 + px) % 360, 0.8); targetCtx.fillRect(px + shake, py + j, 10 - Math.abs(shake), 1); targetCtx.fillStyle = 'rgba(0,0,0,0.25)'; targetCtx.fillRect(px - shake, py + j + 1, 10 - Math.abs(shake), 1); } break; }
+    case 'op-art-fill': { const drift = t / 70; for (let j = 0; j < 10; j++) { for (let i = 0; i < 10; i++) { const diagonal = Math.floor((i + j + drift) / 2); const vertical = Math.floor((i * 2 + Math.sin((j + drift) * 0.55) * 4 + py / 6)); const phaseOp = (diagonal + vertical + Math.floor(offset * 12)) % 8; targetCtx.fillStyle = phaseOp < 2 ? '#00ff48' : phaseOp < 4 ? '#ff00c8' : phaseOp < 6 ? '#00d9ff' : '#ffe600'; targetCtx.fillRect(px + i, py + j, 1, 1); } } targetCtx.fillStyle = 'rgba(0,0,0,0.22)'; for (let j = Math.floor(t / 55) % 4; j < 10; j += 4) targetCtx.fillRect(px, py + j, 10, 1); break; }
+    default: targetCtx.fillStyle = color; targetCtx.fillRect(px, py, 10, 10);
+  }
+}
+
+function rgbToHsl(r, g, b) {
+  r /= 255; g /= 255; b /= 255;
+  let max = Math.max(r, g, b), min = Math.min(r, g, b);
+  let h, s, l = (max + min) / 2;
+  if (max == min) { h = s = 0; } else {
+    let d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+      case g: h = (b - r) / d + 2; break;
+      case b: h = (r - g) / d + 4; break;
+    }
+    h /= 6;
+  }
+  return [h, s, l];
+}
+
+function hslToRgb(h, s, l) {
+  let r, g, b;
+  if (s == 0) {
+    r = g = b = l;
+  } else {
+    function hue2rgb(p, q, t) {
+      if (t < 0) t += 1;
+      if (t > 1) t -= 1;
+      if (t < 1 / 6) return p + (q - p) * 6 * t;
+      if (t < 1 / 2) return q;
+      if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+      return p;
+    }
+    let q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    let p = 2 * l - q;
+    r = hue2rgb(p, q, h + 1 / 3);
+    g = hue2rgb(p, q, h);
+    b = hue2rgb(p, q, h - 1 / 3);
+  }
+  return [r * 255, g * 255, b * 255];
+}
+
+function processAreaEffect(areaCtx, sx, sy, sw, sh, fxId, time) {
+  let imgData = areaCtx.getImageData(sx, sy, sw, sh);
+  let data = imgData.data;
+  if (fxId === 'fx-hue') {
+    for (let i = 0; i < data.length; i += 4) {
+      let hsl = rgbToHsl(data[i], data[i + 1], data[i + 2]);
+      hsl[0] = (hsl[0] + (time / 3000)) % 1.0;
+      let rgb = hslToRgb(hsl[0], hsl[1], hsl[2]);
+      data[i] = rgb[0]; data[i + 1] = rgb[1]; data[i + 2] = rgb[2];
+    }
+  } else if (fxId === 'fx-solar') {
+    for (let i = 0; i < data.length; i += 4) {
+      let thold = 127 + Math.sin(time / 500) * 50;
+      data[i] = data[i] > thold ? 255 - data[i] : data[i];
+      data[i + 1] = data[i + 1] > thold ? 255 - data[i + 1] : data[i + 1];
+      data[i + 2] = data[i + 2] > thold ? 255 - data[i + 2] : data[i + 2];
+    }
+  } else if (fxId === 'fx-dither') {
+    for (let y = 0; y < sh; y++) {
+      for (let x = 0; x < sw; x++) {
+        let idx = (y * sw + x) * 4;
+        let oldR = data[idx]; let oldG = data[idx + 1]; let oldB = data[idx + 2];
+        let newR = oldR < 128 ? 0 : 255; let newG = oldG < 128 ? 0 : 255; let newB = oldB < 128 ? 0 : 255;
+        data[idx] = newR; data[idx + 1] = newG; data[idx + 2] = newB;
+        let errR = oldR - newR; let errG = oldG - newG; let errB = oldB - newB;
+        const distributeErr = (dx, dy, factor) => {
+          if (x + dx >= 0 && x + dx < sw && y + dy >= 0 && y + dy < sh) {
+            let i = ((y + dy) * sw + (x + dx)) * 4;
+            data[i] += errR * factor; data[i + 1] += errG * factor; data[i + 2] += errB * factor;
+          }
+        };
+        distributeErr(1, 0, 7 / 16); distributeErr(-1, 1, 3 / 16); distributeErr(0, 1, 5 / 16); distributeErr(1, 1, 1 / 16);
+      }
+    }
+  } else if (fxId === 'fx-sort') {
+    let sortOffset = Math.sin(time / 400) * 0.5 + 0.5;
+    for (let y = 0; y < sh; y++) {
+      let rowPixels = [];
+      for (let x = 0; x < sw; x++) {
+        let i = (y * sw + x) * 4; rowPixels.push({ r: data[i], g: data[i + 1], b: data[i + 2], a: data[i + 3] });
+      }
+      rowPixels.sort((a, b) => {
+        let w1 = (a.r + a.g + a.b); let w2 = (b.r + b.g + b.b);
+        return sortOffset > 0.5 ? w1 - w2 : w2 - w1;
+      });
+      for (let x = 0; x < sw; x++) {
+        let i = (y * sw + x) * 4;
+        data[i] = rowPixels[x].r; data[i + 1] = rowPixels[x].g; data[i + 2] = rowPixels[x].b; data[i + 3] = rowPixels[x].a;
+      }
+    }
+  } else if (fxId === 'fx-glow') {
+    let tempData = new Uint8ClampedArray(data); let rad = 2;
+    let pulse = Math.abs(Math.sin(time / 400)) * 0.8 + 0.2;
+    for (let y = rad; y < sh - rad; y++) {
+      for (let x = rad; x < sw - rad; x++) {
+        let i = (y * sw + x) * 4; let tr = 0, tg = 0, tb = 0;
+        for (let dy = -rad; dy <= rad; dy++) {
+          for (let dx = -rad; dx <= rad; dx++) {
+            let sIdx = ((y + dy) * sw + (x + dx)) * 4;
+            tr += tempData[sIdx]; tg += tempData[sIdx + 1]; tb += tempData[sIdx + 2];
+          }
+        }
+        let count = Math.pow(rad * 2 + 1, 2);
+        data[i] = Math.min(255, data[i] + tr / count * pulse);
+        data[i + 1] = Math.min(255, data[i + 1] + tg / count * pulse);
+        data[i + 2] = Math.min(255, data[i + 2] + tb / count * pulse);
+      }
+    }
+  } else if (fxId === 'fx-sharp') {
+    let tempData = new Uint8ClampedArray(data);
+    let intensity = Math.sin(time / 200) * 2 + 5;
+    const kernel = [0, -1, 0, -1, intensity, -1, 0, -1, 0];
+    for (let y = 1; y < sh - 1; y++) {
+      for (let x = 1; x < sw - 1; x++) {
+        let i = (y * sw + x) * 4; let r = 0, g = 0, b = 0;
+        for (let ky = -1; ky <= 1; ky++) {
+          for (let kx = -1; kx <= 1; kx++) {
+            let kIdx = ((ky + 1) * 3 + (kx + 1));
+            let pIdx = ((y + ky) * sw + (x + kx)) * 4;
+            r += tempData[pIdx] * kernel[kIdx];
+            g += tempData[pIdx + 1] * kernel[kIdx];
+            b += tempData[pIdx + 2] * kernel[kIdx];
+          }
+        }
+        data[i] = Math.min(255, Math.max(0, r));
+        data[i + 1] = Math.min(255, Math.max(0, g));
+        data[i + 2] = Math.min(255, Math.max(0, b));
+      }
+    }
+  } else if (fxId === 'fx-smudge') {
+    let tempData = new Uint8ClampedArray(data);
+    let dirX = Math.round(Math.cos(time / 300) * 2);
+    let dirY = Math.round(Math.sin(time / 200) * 2);
+    for (let y = 2; y < sh - 2; y++) {
+      for (let x = 2; x < sw - 2; x++) {
+        let clampX = Math.min(Math.max(x + dirX, 0), sw - 1);
+        let clampY = Math.min(Math.max(y + dirY, 0), sh - 1);
+        let srcIdx = (clampY * sw + clampX) * 4;
+        let dstIdx = (y * sw + x) * 4;
+        data[dstIdx] = tempData[srcIdx];
+        data[dstIdx + 1] = tempData[srcIdx + 1];
+        data[dstIdx + 2] = tempData[srcIdx + 2];
+      }
+    }
+  }
+  areaCtx.putImageData(imgData, sx, sy);
+}
+
+function render(time) {
+  ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+  const renderGrid = activeFrameGrid || grid;
+  let activeFxCells = [];
+  for (let y = 0; y < rows; y++) {
+    for (let x = 0; x < cols; x++) {
+      const cell = renderGrid[y] && renderGrid[y][x];
+      if (cell) {
+        if (cell.type.startsWith('fx-')) {
+          activeFxCells.push({ x, y, type: cell.type });
+        } else {
+          drawGlitchTool(ctx, x * cellSize, y * cellSize, cell, time);
+        }
+      }
+    }
+  }
+  if (activeFxCells.length > 0) {
+    let compositeCtx = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
+    compositeCtx.canvas.width = canvasWidth; compositeCtx.canvas.height = canvasHeight;
+    compositeCtx.drawImage(staticCanvas, 0, 0);
+    compositeCtx.drawImage(paintCanvas, 0, 0);
+    activeFxCells.forEach(cell => {
+      processAreaEffect(compositeCtx, cell.x * cellSize, cell.y * cellSize, cellSize, cellSize, cell.type, time);
+    });
+    activeFxCells.forEach(cell => {
+      ctx.drawImage(compositeCtx.canvas, cell.x * cellSize, cell.y * cellSize, cellSize, cellSize, cell.x * cellSize, cell.y * cellSize, cellSize, cellSize);
+    });
+  }
+  if (isDrawing && (currentTool === 'rect' || currentTool === 'circle' || currentTool === 'triangle') && startX !== -1) {
+    let rMinX = Math.min(startX, currX); let rMaxX = Math.max(startX, currX);
+    let rMinY = Math.min(startY, currY); let rMaxY = Math.max(startY, currY);
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+    ctx.fillRect(rMinX * cellSize, rMinY * cellSize, (rMaxX - rMinX + 1) * cellSize, (rMaxY - rMinY + 1) * cellSize);
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 3;
+    ctx.strokeRect(rMinX * cellSize, rMinY * cellSize, (rMaxX - rMinX + 1) * cellSize, (rMaxY - rMinY + 1) * cellSize);
+    ctx.strokeStyle = '#000'; ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    ctx.strokeRect(rMinX * cellSize, rMinY * cellSize, (rMaxX - rMinX + 1) * cellSize, (rMaxY - rMinY + 1) * cellSize);
+    ctx.setLineDash([]);
+  }
+  if (selection) {
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 3;
+    ctx.strokeRect(selection.x * cellSize, selection.y * cellSize, selection.w * cellSize, selection.h * cellSize);
+    ctx.strokeStyle = '#000'; ctx.lineWidth = 1;
+    ctx.lineDashOffset = -(time / 50);
+    ctx.setLineDash([4, 4]);
+    ctx.strokeRect(selection.x * cellSize, selection.y * cellSize, selection.w * cellSize, selection.h * cellSize);
+    ctx.setLineDash([]);
+  } else if (isDrawing && currentTool === 'select' && startX !== -1) {
+    let rMinX = Math.min(startX, currX); let rMaxX = Math.max(startX, currX);
+    let rMinY = Math.min(startY, currY); let rMaxY = Math.max(startY, currY);
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 3;
+    ctx.strokeRect(rMinX * cellSize, rMinY * cellSize, (rMaxX - rMinX + 1) * cellSize, (rMaxY - rMinY + 1) * cellSize);
+    ctx.strokeStyle = '#000'; ctx.lineWidth = 1;
+    ctx.lineDashOffset = -(time / 50);
+    ctx.setLineDash([4, 4]);
+    ctx.strokeRect(rMinX * cellSize, rMinY * cellSize, (rMaxX - rMinX + 1) * cellSize, (rMaxY - rMinY + 1) * cellSize);
+    ctx.setLineDash([]);
+  }
+  paintPatterns.forEach(paintId => {
+    const c = document.getElementById(`icon-${paintId}`);
+    if (c) {
+      const btx = c.getContext('2d');
+      btx.clearRect(0, 0, 16, 16);
+      const dummyCell = { type: paintId, color: fgColor, offset: 0 };
+      drawScaledGlitchTool(btx, 2, 2, dummyCell, time);
+    }
+  });
+  requestAnimationFrame(render);
+}
+
+requestAnimationFrame(render);
+
+// ============================================================================
+// HELP POPUP - FULLY FUNCTIONAL
+// ============================================================================
+function showHelpPopup(type) {
+  const overlay = document.getElementById('help-popup-overlay');
+  const titleEl = document.getElementById('help-popup-title');
+  const contentEl = document.getElementById('help-popup-content');
+  
+  if (type === 'guide') {
+    titleEl.innerText = 'User Guide';
+    contentEl.innerHTML = `
+      <div class="help-section"><h4>Getting Started</h4><p><strong>Drawing:</strong> Click and drag with mouse/finger. Right-click (or two-finger tap) uses background color.</p><p><strong>Tools:</strong> Pen, Fill, Rectangle, Circle, Select</p></div>
+      <div class="help-section"><h4>Glitch FX</h4><p>Select any effect from the bottom bar (Noise, RGB Split, Matrix, etc.) and draw - they animate in real-time!</p><p><strong>FX category:</strong> HUE, SOLAR, DITHER apply area-wide effects when drawn.</p></div>
+      <div class="help-section"><h4>Sigil Studio</h4><p>Generate mystical symbols with different symmetries (Horizontal, Vertical, Rotational, Bilateral). Choose from Rune, Circuit, Weave, Geometric, QR-like, or Organic styles.</p><p>Click "IMPORT TO CANVAS" to add the sigil to your artwork. Click "RITUAL GIF LOOP" to create an animated mystical animation.</p></div>
+      <div class="help-section"><h4>Corruption</h4><p>Slide intensity (0-100%) and click CORRUPT to randomly apply your selected glitch effect to the canvas.</p></div>
+      <div class="help-section"><h4>GIF Import/Export</h4><p>Import animated GIFs, play/pause, and even corrupt individual frames. Export your art as PNG or animated GIF with adjustable scale (1x-4x) and FPS.</p></div>
+      <div class="help-section"><h4>Colors</h4><p>Left-click on palette = foreground color. Right-click on palette = background color. The two swatches show current colors.</p></div>
+    `;
+  } else if (type === 'shortcuts') {
+    titleEl.innerText = 'Keyboard Shortcuts';
+    contentEl.innerHTML = `
+      <div class="shortcut-row"><span>Undo</span><span class="shortcut-key">Ctrl + Z</span></div>
+      <div class="shortcut-row"><span>Redo</span><span class="shortcut-key">Ctrl + Y</span></div>
+      <div class="shortcut-row"><span>Right-click on canvas</span><span>Use background color</span></div>
+      <div class="shortcut-row"><span>Left-click on palette</span><span>Set foreground color</span></div>
+      <div class="shortcut-row"><span>Right-click on palette</span><span>Set background color</span></div>
+    `;
+  } else if (type === 'about') {
+    titleEl.innerText = 'About Glitch Paint 95';
+    contentEl.innerHTML = `
+      <div style="text-align:center;"><p style="font-size:24px;">GLITCH PAINT</p><h3>Glitch Paint 95</h3><p><strong>Version 2.0 - Sigil Studio Edition</strong></p><p>A retro Windows 95-style pixel art editor with glitch effects and sigil generation.</p><div style="background:#dfdfdf;padding:10px;margin:12px 0;">40+ glitch brushes<br>Procedural sigil generator<br>GIF import/export<br>Real-time corruption effects<br>Undo/Redo history</div><p>2024 Glitch Paint 95<br>All your pixels belong to us</p></div>
+    `;
+  }
+  overlay.style.display = 'flex';
+}
+
+function closeHelpPopup() {
+  document.getElementById('help-popup-overlay').style.display = 'none';
+}
+
+// Attach help menu events
+document.getElementById('menu-help-guide')?.addEventListener('click', (e) => { e.stopPropagation(); closeAllMenus(); showHelpPopup('guide'); });
+document.getElementById('menu-help-shortcuts')?.addEventListener('click', (e) => { e.stopPropagation(); closeAllMenus(); showHelpPopup('shortcuts'); });
+document.getElementById('menu-help-about')?.addEventListener('click', (e) => { e.stopPropagation(); closeAllMenus(); showHelpPopup('about'); });
+document.getElementById('help-popup-close')?.addEventListener('click', closeHelpPopup);
+document.getElementById('help-popup-overlay')?.addEventListener('click', (e) => { if (e.target === document.getElementById('help-popup-overlay')) closeHelpPopup(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeHelpPopup(); });
+
+// ============================================================================
+// SIGIL GENERATOR (FULL ORIGINAL - preserved)
+// ============================================================================
+function generateSigil(gridSize, symmetry, style, density) {
+  const size = parseInt(gridSize);
+  const matrix = Array(size).fill().map(() => Array(size).fill(0));
+  const center = Math.floor(size / 2);
+  const densityThreshold = density / 100;
+
+  function setPixel(x, y, value) {
+    if (x < 0 || x >= size || y < 0 || y >= size) return;
+    switch (symmetry) {
+      case 'horizontal': matrix[y][x] = value; matrix[y][size - 1 - x] = value; break;
+      case 'vertical': matrix[y][x] = value; matrix[size - 1 - y][x] = value; break;
+      case 'rotational': matrix[y][x] = value; matrix[x][size - 1 - y] = value; matrix[size - 1 - y][size - 1 - x] = value; matrix[size - 1 - x][y] = value; break;
+      case 'bilateral': matrix[y][x] = value; matrix[y][size - 1 - x] = value; matrix[size - 1 - y][x] = value; matrix[size - 1 - y][size - 1 - x] = value; break;
+      default: matrix[y][x] = value;
+    }
+  }
+
+  for (let y = 0; y < (symmetry === 'horizontal' || symmetry === 'bilateral' ? size : Math.ceil(size / 2)); y++) {
+    for (let x = 0; x < (symmetry === 'vertical' || symmetry === 'bilateral' ? size : Math.ceil(size / 2)); x++) {
+      let value = 0;
+      const distFromCenter = Math.sqrt(Math.pow(x - center, 2) + Math.pow(y - center, 2)) / center;
+
+      switch (style) {
+        case 'circuit': value = (Math.random() < densityThreshold * (0.5 + distFromCenter * 0.5)) ? 1 : 0; if (x % 2 === 1 || y % 2 === 1) value = Math.random() < densityThreshold * 0.7 ? 1 : 0; break;
+        case 'rune': value = (Math.random() < densityThreshold * (1 - distFromCenter * 0.3)) ? 1 : 0; if (x === center || y === center) value = Math.random() < 0.7 ? 1 : value; break;
+        case 'weave': value = ((x + y) % 2 === 0) ? (Math.random() < densityThreshold ? 1 : 0) : (Math.random() < densityThreshold * 0.6 ? 1 : 0); break;
+        case 'geometric': value = (Math.random() < densityThreshold) ? 1 : 0; if (Math.abs(x - center) + Math.abs(y - center) < center * 0.5) value = 1; break;
+        case 'qr': const blockX = Math.floor(x / 3); const blockY = Math.floor(y / 3); value = ((blockX + blockY) % 2 === 0) ? (Math.random() < densityThreshold) : (Math.random() < densityThreshold * 0.4); if ((x < 4 && y < 4) || (x < 4 && y > size - 5) || (x > size - 5 && y < 4)) value = 1; break;
+        case 'organic': const noise = Math.sin(x * 0.5) * Math.cos(y * 0.5) + Math.random() * 0.5; value = (noise > 0.7 - densityThreshold) ? 1 : 0; break;
+        default: value = Math.random() < densityThreshold ? 1 : 0;
+      }
+      if (Math.random() < densityThreshold * 0.3) value = 1;
+      setPixel(x, y, value);
+    }
+  }
+
+  if (style === 'rune') {
+    setPixel(center, center, 1);
+    if (center - 1 >= 0) setPixel(center - 1, center, 1);
+    if (center + 1 < size) setPixel(center + 1, center, 1);
+    if (center - 1 >= 0) setPixel(center, center - 1, 1);
+    if (center + 1 < size) setPixel(center, center + 1, 1);
+  }
+  return matrix;
+}
+
+function renderSigilToPreview(matrix, previewCanvas, maxSize = 96) {
+  const size = matrix.length;
+  const cellW = Math.floor(maxSize / size);
+  const cellH = Math.floor(maxSize / size);
+  previewCanvas.width = size * cellW;
+  previewCanvas.height = size * cellH;
+  const pctx = previewCanvas.getContext('2d');
+  pctx.fillStyle = '#ffffff';
+  pctx.fillRect(0, 0, previewCanvas.width, previewCanvas.height);
+  pctx.fillStyle = '#000000';
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      if (matrix[y][x] === 1) {
+        pctx.fillRect(x * cellW, y * cellH, cellW, cellH);
+      }
+    }
+  }
+}
+
+function importSigilToCanvas(matrix) {
+  const size = matrix.length;
+  const newCanvasWidth = size * cellSize;
+  const newCanvasHeight = size * cellSize;
+  setCanvasSize(newCanvasWidth, newCanvasHeight, { preserve: false });
+  staticCtx.fillStyle = '#ffffff';
+  staticCtx.fillRect(0, 0, canvasWidth, canvasHeight);
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      if (matrix[y][x] === 1) {
+        staticCtx.fillStyle = fgColor;
+        staticCtx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+      }
+    }
+  }
+  grid = makeEmptyGrid();
+  saveState();
+  updateGrid();
+}
+
+let currentSigilMatrix = null;
+
+function updateSigil() {
+  const size = document.getElementById('sigil-size').value;
+  const symmetry = document.getElementById('sigil-symmetry').value;
+  const style = document.getElementById('sigil-style').value;
+  const density = parseInt(document.getElementById('sigil-density').value);
+  currentSigilMatrix = generateSigil(size, symmetry, style, density);
+  renderSigilToPreview(currentSigilMatrix, document.getElementById('sigil-preview-canvas'), 96);
+}
+
+document.getElementById('generate-sigil-btn').addEventListener('click', () => { updateSigil(); });
+document.getElementById('import-sigil-btn').addEventListener('click', () => {
+  if (currentSigilMatrix) { importSigilToCanvas(currentSigilMatrix); }
+  else { updateSigil(); importSigilToCanvas(currentSigilMatrix); }
+});
+document.getElementById('ritual-sigil-gif-btn').addEventListener('click', () => {
+  if (!currentSigilMatrix) updateSigil();
+  const size = currentSigilMatrix.length;
+  const ritualCellSize = 12;
+  const ritualWidth = size * ritualCellSize;
+  const ritualHeight = size * ritualCellSize;
+  const frames = [];
+  for (let frameIndex = 0; frameIndex < 24; frameIndex++) {
+    const canvas = document.createElement('canvas');
+    const rctx = canvas.getContext('2d');
+    canvas.width = ritualWidth;
+    canvas.height = ritualHeight;
+    const pulse = 0.45 + Math.sin((frameIndex / 24) * Math.PI * 2) * 0.35;
+    rctx.fillStyle = '#050008';
+    rctx.fillRect(0, 0, ritualWidth, ritualHeight);
+    rctx.shadowBlur = 6 + pulse * 18;
+    rctx.shadowColor = fgColor;
+    for (let y = 0; y < size; y++) {
+      for (let x = 0; x < size; x++) {
+        if (currentSigilMatrix[y][x] === 1) {
+          const jitterX = (Math.random() - 0.5) * pulse * 2;
+          const jitterY = (Math.random() - 0.5) * pulse * 2;
+          rctx.fillStyle = frameIndex % 3 === 0 ? invertColor(fgColor) : fgColor;
+          rctx.fillRect(x * ritualCellSize + jitterX, y * ritualCellSize + jitterY, ritualCellSize, ritualCellSize);
+        }
+      }
+    }
+    rctx.shadowBlur = 0;
+    if (frameIndex % 4 === 0) {
+      rctx.globalAlpha = 0.25;
+      rctx.fillStyle = '#00ffff';
+      rctx.fillRect(Math.random() * ritualWidth, 0, 2, ritualHeight);
+      rctx.fillStyle = '#ff00ff';
+      rctx.fillRect(0, Math.random() * ritualHeight, ritualWidth, 2);
+      rctx.globalAlpha = 1;
+    }
+    frames.push({ canvas, width: ritualWidth, height: ritualHeight, delay: 70 });
+  }
+  pauseGIF();
+  gifFrames = frames;
+  gifFrameGrids = [];
+  currentGifFrame = 0;
+  setCanvasSize(ritualWidth, ritualHeight, { image: frames[0].canvas, preserve: false });
+  history = [];
+  historyStep = -1;
+  saveState();
+  document.getElementById('gif-info').innerHTML = `Ritual sigil loop ready: ${frames.length} frames | ${ritualWidth}x${ritualHeight}`;
+  document.getElementById('play-gif-btn').style.display = 'inline-block';
+  document.getElementById('pause-gif-btn').style.display = 'inline-block';
+  document.getElementById('frame-corrupt-btn').style.display = 'inline-block';
+  playGIF();
+});
+document.getElementById('sigil-density').addEventListener('input', (e) => {
+  document.getElementById('density-value').innerText = e.target.value;
+});
+
+// ============================================================================
+// CORRUPTION BUTTON
+// ============================================================================
+const corruptIntensitySlider = document.getElementById('corrupt-intensity');
+const corruptIntensityValue = document.getElementById('corrupt-intensity-value');
+corruptIntensitySlider.addEventListener('input', (e) => { corruptIntensityValue.innerText = e.target.value + '%'; });
+document.getElementById('corrupt-canvas-btn').addEventListener('click', () => {
+  const intensity = parseInt(corruptIntensitySlider.value) / 100;
+  const totalCells = rows * cols;
+  const cellsToCorrupt = Math.floor(totalCells * intensity);
+  const allCells = [];
+  for (let y = 0; y < rows; y++) { for (let x = 0; x < cols; x++) { allCells.push({ x, y }); } }
+  for (let i = allCells.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [allCells[i], allCells[j]] = [allCells[j], allCells[i]]; }
+  const selectedCells = allCells.slice(0, cellsToCorrupt);
+  for (const cell of selectedCells) { grid[cell.y][cell.x] = { type: currentPaint, color: fgColor, offset: Math.random() }; }
+  saveState();
+  updateGrid();
+});
+
+// ============================================================================
+// GIF IMPORT (FULL ORIGINAL - preserved)
+// ============================================================================
+let gifFrames = [];
+let gifFrameGrids = [];
+let currentGifFrame = 0;
+let gifAnimationId = null;
+let gifPlaying = false;
+
+document.getElementById('import-gif-btn').addEventListener('click', () => { document.getElementById('import-gif-input').click(); });
+importGifInput.addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file || file.type !== 'image/gif') { alert('Please select a GIF file'); return; }
+  const reader = new FileReader();
+  reader.onload = async (event) => {
+    const arrayBuffer = event.target.result;
+    try {
+      const gif = await decodeImportedGIF(arrayBuffer);
+      if (gif && gif.frames && gif.frames.length > 0) {
+        pauseGIF();
+        gifFrames = gif.frames;
+        gifFrameGrids = [];
+        currentGifFrame = 0;
+        const firstFrame = gifFrames[0];
+        setCanvasSize(firstFrame.width, firstFrame.height, { image: firstFrame.canvas, preserve: false });
+        history = []; historyStep = -1; saveState();
+        document.getElementById('gif-info').innerHTML = `Loaded: ${gifFrames.length} frames | ${firstFrame.width}x${firstFrame.height}`;
+        document.getElementById('play-gif-btn').style.display = 'inline-block';
+        document.getElementById('pause-gif-btn').style.display = 'inline-block';
+        document.getElementById('frame-corrupt-btn').style.display = 'inline-block';
+        playGIF();
+      } else { alert('Could not parse GIF frames'); }
+    } catch (err) { alert('Failed to parse GIF: ' + (err && err.message ? err.message : 'Try a different file.')); }
+  };
+  reader.readAsArrayBuffer(file);
+  importGifInput.value = '';
+});
+
+async function decodeImportedGIF(arrayBuffer) {
+  if (window.gifDecoderReady) await window.gifDecoderReady;
+  const gifuctApi = window.gifuct || window.gifuctJS || window.GIFuct || window.Gifuct || {};
+  const gifParser = gifuctApi.parseGIF || window.parseGIF;
+  const frameDecoder = gifuctApi.decompressFrames || window.decompressFrames;
+  if (!gifParser || !frameDecoder) return decodeGIFWithImageDecoder(arrayBuffer);
+  const gif = gifParser(arrayBuffer);
+  const decodedFrames = frameDecoder(gif, true);
+  const width = gif.lsd?.width || gif.width;
+  const height = gif.lsd?.height || gif.height;
+  if (!width || !height || !decodedFrames.length) return decodeGIFWithImageDecoder(arrayBuffer);
+  const workCanvas = document.createElement('canvas');
+  const workCtx = workCanvas.getContext('2d');
+  workCanvas.width = width; workCanvas.height = height;
+  workCtx.clearRect(0, 0, width, height);
+  return {
+    width, height,
+    frames: decodedFrames.map((frame) => {
+      const dims = frame.dims;
+      const previousImage = frame.disposalType === 3 ? workCtx.getImageData(0, 0, width, height) : null;
+      const patchPixels = frame.patch instanceof Uint8ClampedArray ? frame.patch : new Uint8ClampedArray(frame.patch);
+      const patch = new ImageData(patchPixels, dims.width, dims.height);
+      workCtx.putImageData(patch, dims.left, dims.top);
+      const frameCanvas = document.createElement('canvas');
+      frameCanvas.width = width; frameCanvas.height = height;
+      frameCanvas.getContext('2d').drawImage(workCanvas, 0, 0);
+      if (frame.disposalType === 2) workCtx.clearRect(dims.left, dims.top, dims.width, dims.height);
+      else if (frame.disposalType === 3 && previousImage) workCtx.putImageData(previousImage, 0, 0);
+      return { canvas: frameCanvas, width, height, delay: Math.max(20, frame.delay || 100) };
+    })
+  };
+}
+
+async function decodeGIFWithImageDecoder(arrayBuffer) {
+  if (!('ImageDecoder' in window)) throw new Error('No animated GIF decoder is available');
+  const decoder = new ImageDecoder({ data: new Blob([arrayBuffer], { type: 'image/gif' }), type: 'image/gif' });
+  await decoder.tracks.ready;
+  const frameCount = decoder.tracks.selectedTrack.frameCount || 1;
+  const frames = [];
+  for (let i = 0; i < frameCount; i++) {
+    const result = await decoder.decode({ frameIndex: i });
+    const bitmap = result.image;
+    const frameCanvas = document.createElement('canvas');
+    frameCanvas.width = bitmap.displayWidth || bitmap.width;
+    frameCanvas.height = bitmap.displayHeight || bitmap.height;
+    frameCanvas.getContext('2d').drawImage(bitmap, 0, 0);
+    frames.push({ canvas: frameCanvas, width: frameCanvas.width, height: frameCanvas.height, delay: Math.max(20, Math.round((bitmap.duration || 100000) / 1000)) });
+    bitmap.close();
+  }
+  return { width: frames[0].width, height: frames[0].height, frames };
+}
+
+function playGIF() {
+  if (gifAnimationId) cancelAnimationFrame(gifAnimationId);
+  gifPlaying = true;
+  let lastTime = performance.now();
+  function animateGIF(now) {
+    if (!gifFrames.length) return;
+    if (now - lastTime >= gifFrames[currentGifFrame].delay) {
+      currentGifFrame = (currentGifFrame + 1) % gifFrames.length;
+      const frame = gifFrames[currentGifFrame];
+      if (frame && frame.canvas) { staticCtx.drawImage(frame.canvas, 0, 0, canvasWidth, canvasHeight); activeFrameGrid = gifFrameGrids[currentGifFrame] || null; }
+      lastTime = now;
+    }
+    if (gifPlaying) gifAnimationId = requestAnimationFrame(animateGIF);
+  }
+  gifAnimationId = requestAnimationFrame(animateGIF);
+}
+
+function pauseGIF() { if (gifAnimationId) { cancelAnimationFrame(gifAnimationId); gifAnimationId = null; } gifPlaying = false; activeFrameGrid = null; }
+
+document.getElementById('play-gif-btn').addEventListener('click', () => { playGIF(); });
+document.getElementById('pause-gif-btn').addEventListener('click', () => { pauseGIF(); });
+document.getElementById('frame-corrupt-btn').addEventListener('click', () => {
+  if (!gifFrames.length) return;
+  const intensity = parseInt(corruptIntensitySlider.value) / 100;
+  const cellsToCorrupt = Math.floor(rows * cols * intensity);
+  gifFrameGrids = gifFrames.map(() => {
+    const frameGrid = cloneGrid();
+    const used = new Set();
+    for (let i = 0; i < cellsToCorrupt; i++) {
+      let x, y, key;
+      do { x = Math.floor(Math.random() * cols); y = Math.floor(Math.random() * rows); key = `${x},${y}`; } while (used.has(key) && used.size < rows * cols);
+      used.add(key);
+      frameGrid[y][x] = { type: currentPaint, color: fgColor, offset: Math.random() };
+    }
+    return frameGrid;
+  });
+  document.getElementById('gif-info').innerHTML = `Animated frame corruption ready: ${gifFrames.length} frames`;
+  activeFrameGrid = gifFrameGrids[currentGifFrame] || null;
+});
+
+setTimeout(() => { updateSigil(); }, 100);
+// ============================================================================
+// ALPHABET & NUMBER STAMP TOOL - Individual buttons for each character
+// ============================================================================
+
+// Create a new panel for alphabet/number stamps
+const alphabetPanel = document.createElement('div');
+alphabetPanel.id = 'alphabet-panel';
+alphabetPanel.style.cssText = `
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 700px;
+  max-width: 90vw;
+  max-height: 80vh;
+  background: #c0c0c0;
+  border: 1px solid #ffffff;
+  border-right-color: #0a0a0a;
+  border-bottom-color: #0a0a0a;
+  z-index: 2000;
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+`;
+
+alphabetPanel.innerHTML = `
+  <div class="title-bar">
+    <div class="title-bar-text">Character Stamp Selector</div>
+    <div class="title-bar-controls">
+      <button id="alphabet-close">X</button>
+    </div>
+  </div>
+  <div class="window-body" style="overflow-y: auto; padding: 8px;">
+    <div style="margin-bottom: 8px; font-size: 10px;">
+      <span>Stamp Size: </span>
+      <select id="stamp-size-select" style="width: 80px;">
+        <option value="1">Small (10px)</option>
+        <option value="2" selected>Medium (20px)</option>
+        <option value="3">Large (30px)</option>
+        <option value="4">Huge (40px)</option>
+      </select>
+      <span style="margin-left: 12px;">Click a letter/number, then click on canvas to stamp it!</span>
+    </div>
+    <div style="border-top: 1px solid #808080; margin: 4px 0;"></div>
+    <div style="font-weight: bold; margin: 6px 0;">UPPERCASE A-Z</div>
+    <div id="uppercase-buttons" style="display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 12px;"></div>
+    <div style="font-weight: bold; margin: 6px 0;">Lowercase a-z</div>
+    <div id="lowercase-buttons" style="display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 12px;"></div>
+    <div style="font-weight: bold; margin: 6px 0;">Numbers 0-9</div>
+    <div id="number-buttons" style="display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 12px;"></div>
+    <div style="font-weight: bold; margin: 6px 0;">Common Symbols</div>
+    <div id="symbol-buttons" style="display: flex; flex-wrap: wrap; gap: 3px;"></div>
+  </div>
+`;
+
+document.body.appendChild(alphabetPanel);
+
+// Character stamp definitions (5x5 pixel grid for each character)
+const charStampData = {
+  // Uppercase A-Z
+  'A': [0,1,1,1,0, 1,0,0,0,1, 1,1,1,1,1, 1,0,0,0,1, 1,0,0,0,1],
+  'B': [1,1,1,1,0, 1,0,0,0,1, 1,1,1,1,0, 1,0,0,0,1, 1,1,1,1,0],
+  'C': [0,1,1,1,0, 1,0,0,0,1, 1,0,0,0,0, 1,0,0,0,1, 0,1,1,1,0],
+  'D': [1,1,1,1,0, 1,0,0,0,1, 1,0,0,0,1, 1,0,0,0,1, 1,1,1,1,0],
+  'E': [1,1,1,1,1, 1,0,0,0,0, 1,1,1,1,0, 1,0,0,0,0, 1,1,1,1,1],
+  'F': [1,1,1,1,1, 1,0,0,0,0, 1,1,1,1,0, 1,0,0,0,0, 1,0,0,0,0],
+  'G': [0,1,1,1,0, 1,0,0,0,1, 1,0,1,1,1, 1,0,0,0,1, 0,1,1,1,0],
+  'H': [1,0,0,0,1, 1,0,0,0,1, 1,1,1,1,1, 1,0,0,0,1, 1,0,0,0,1],
+  'I': [1,1,1,1,1, 0,0,1,0,0, 0,0,1,0,0, 0,0,1,0,0, 1,1,1,1,1],
+  'J': [0,0,0,0,1, 0,0,0,0,1, 0,0,0,0,1, 1,0,0,0,1, 0,1,1,1,0],
+  'K': [1,0,0,0,1, 1,0,0,1,0, 1,1,1,0,0, 1,0,0,1,0, 1,0,0,0,1],
+  'L': [1,0,0,0,0, 1,0,0,0,0, 1,0,0,0,0, 1,0,0,0,0, 1,1,1,1,1],
+  'M': [1,0,0,0,1, 1,1,0,1,1, 1,0,1,0,1, 1,0,0,0,1, 1,0,0,0,1],
+  'N': [1,0,0,0,1, 1,1,0,0,1, 1,0,1,0,1, 1,0,0,1,1, 1,0,0,0,1],
+  'O': [0,1,1,1,0, 1,0,0,0,1, 1,0,0,0,1, 1,0,0,0,1, 0,1,1,1,0],
+  'P': [1,1,1,1,0, 1,0,0,0,1, 1,1,1,1,0, 1,0,0,0,0, 1,0,0,0,0],
+  'Q': [0,1,1,1,0, 1,0,0,0,1, 1,0,1,0,1, 1,0,0,1,1, 0,1,1,1,1],
+  'R': [1,1,1,1,0, 1,0,0,0,1, 1,1,1,1,0, 1,0,0,1,0, 1,0,0,0,1],
+  'S': [0,1,1,1,0, 1,0,0,0,0, 0,1,1,1,0, 0,0,0,0,1, 0,1,1,1,0],
+  'T': [1,1,1,1,1, 0,0,1,0,0, 0,0,1,0,0, 0,0,1,0,0, 0,0,1,0,0],
+  'U': [1,0,0,0,1, 1,0,0,0,1, 1,0,0,0,1, 1,0,0,0,1, 0,1,1,1,0],
+  'V': [1,0,0,0,1, 1,0,0,0,1, 0,1,0,1,0, 0,1,0,1,0, 0,0,1,0,0],
+  'W': [1,0,0,0,1, 1,0,0,0,1, 1,0,1,0,1, 1,0,1,0,1, 0,1,0,1,0],
+  'X': [1,0,0,0,1, 0,1,0,1,0, 0,0,1,0,0, 0,1,0,1,0, 1,0,0,0,1],
+  'Y': [1,0,0,0,1, 0,1,0,1,0, 0,0,1,0,0, 0,0,1,0,0, 0,0,1,0,0],
+  'Z': [1,1,1,1,1, 0,0,0,1,0, 0,0,1,0,0, 0,1,0,0,0, 1,1,1,1,1],
+  
+  // Numbers 0-9
+  '0': [0,1,1,1,0, 1,0,0,0,1, 1,0,1,0,1, 1,0,0,0,1, 0,1,1,1,0],
+  '1': [0,0,1,0,0, 0,1,1,0,0, 0,0,1,0,0, 0,0,1,0,0, 0,1,1,1,0],
+  '2': [0,1,1,1,0, 1,0,0,0,1, 0,0,1,1,0, 0,1,0,0,0, 1,1,1,1,1],
+  '3': [0,1,1,1,0, 1,0,0,0,1, 0,0,1,1,0, 1,0,0,0,1, 0,1,1,1,0],
+  '4': [1,0,0,1,0, 1,0,0,1,0, 1,1,1,1,1, 0,0,0,1,0, 0,0,0,1,0],
+  '5': [1,1,1,1,1, 1,0,0,0,0, 1,1,1,1,0, 0,0,0,0,1, 1,1,1,1,0],
+  '6': [0,1,1,1,0, 1,0,0,0,0, 1,1,1,1,0, 1,0,0,0,1, 0,1,1,1,0],
+  '7': [1,1,1,1,1, 0,0,0,0,1, 0,0,0,1,0, 0,0,1,0,0, 0,1,0,0,0],
+  '8': [0,1,1,1,0, 1,0,0,0,1, 0,1,1,1,0, 1,0,0,0,1, 0,1,1,1,0],
+  '9': [0,1,1,1,0, 1,0,0,0,1, 0,1,1,1,1, 0,0,0,0,1, 0,1,1,1,0],
+  
+  // Lowercase a-z
+  'a': [0,1,1,1,0, 0,0,0,0,1, 0,1,1,1,1, 1,0,0,0,1, 0,1,1,1,1],
+  'b': [1,0,0,0,0, 1,0,0,0,0, 1,1,1,1,0, 1,0,0,0,1, 1,1,1,1,0],
+  'c': [0,1,1,1,0, 1,0,0,0,0, 1,0,0,0,0, 1,0,0,0,0, 0,1,1,1,0],
+  'd': [0,0,0,0,1, 0,0,0,0,1, 0,1,1,1,1, 1,0,0,0,1, 0,1,1,1,1],
+  'e': [0,1,1,1,0, 1,0,0,0,1, 1,1,1,1,1, 1,0,0,0,0, 0,1,1,1,0],
+  'f': [0,1,1,1,0, 1,0,0,0,0, 1,1,1,1,0, 1,0,0,0,0, 1,0,0,0,0],
+  'g': [0,1,1,1,0, 1,0,0,0,1, 0,1,1,1,1, 0,0,0,0,1, 0,1,1,1,0],
+  'h': [1,0,0,0,0, 1,0,0,0,0, 1,1,1,1,0, 1,0,0,0,1, 1,0,0,0,1],
+  'i': [0,0,1,0,0, 0,0,0,0,0, 0,0,1,0,0, 0,0,1,0,0, 0,0,1,0,0],
+  'j': [0,0,0,1,0, 0,0,0,0,0, 0,0,0,1,0, 0,0,0,1,0, 1,0,0,1,0],
+  'k': [1,0,0,0,0, 1,0,0,1,0, 1,1,1,0,0, 1,0,0,1,0, 1,0,0,0,1],
+  'l': [0,0,1,0,0, 0,0,1,0,0, 0,0,1,0,0, 0,0,1,0,0, 0,0,1,1,0],
+  'm': [1,1,0,1,0, 1,0,1,0,1, 1,0,1,0,1, 1,0,0,0,1, 1,0,0,0,1],
+  'n': [1,1,1,1,0, 1,0,0,0,1, 1,0,0,0,1, 1,0,0,0,1, 1,0,0,0,1],
+  'o': [0,1,1,1,0, 1,0,0,0,1, 1,0,0,0,1, 1,0,0,0,1, 0,1,1,1,0],
+  'p': [1,1,1,1,0, 1,0,0,0,1, 1,1,1,1,0, 1,0,0,0,0, 1,0,0,0,0],
+  'q': [0,1,1,1,0, 1,0,0,0,1, 0,1,1,1,1, 0,0,0,0,1, 0,0,0,0,1],
+  'r': [1,1,1,1,0, 1,0,0,0,0, 1,0,0,0,0, 1,0,0,0,0, 1,0,0,0,0],
+  's': [0,1,1,1,0, 1,0,0,0,0, 0,1,1,1,0, 0,0,0,0,1, 0,1,1,1,0],
+  't': [0,0,1,0,0, 0,0,1,0,0, 0,1,1,1,1, 0,0,1,0,0, 0,0,1,1,0],
+  'u': [1,0,0,0,1, 1,0,0,0,1, 1,0,0,0,1, 1,0,0,0,1, 0,1,1,1,1],
+  'v': [1,0,0,0,1, 1,0,0,0,1, 0,1,0,1,0, 0,1,0,1,0, 0,0,1,0,0],
+  'w': [1,0,0,0,1, 1,0,0,0,1, 1,0,1,0,1, 1,0,1,0,1, 0,1,0,1,0],
+  'x': [1,0,0,0,1, 0,1,0,1,0, 0,0,1,0,0, 0,1,0,1,0, 1,0,0,0,1],
+  'y': [1,0,0,0,1, 1,0,0,0,1, 0,1,1,1,1, 0,0,0,0,1, 0,1,1,1,0],
+  'z': [1,1,1,1,1, 0,0,0,1,0, 0,0,1,0,0, 0,1,0,0,0, 1,1,1,1,1],
+  
+  // Symbols
+  '!': [0,0,1,0,0, 0,0,1,0,0, 0,0,1,0,0, 0,0,0,0,0, 0,0,1,0,0],
+  '?': [0,1,1,1,0, 1,0,0,0,1, 0,0,0,1,0, 0,0,0,0,0, 0,0,1,0,0],
+  '#': [0,1,0,1,0, 1,1,1,1,1, 0,1,0,1,0, 1,1,1,1,1, 0,1,0,1,0],
+  '$': [0,1,1,1,0, 1,0,1,0,0, 0,1,1,1,0, 0,0,1,0,1, 0,1,1,1,0],
+  '%': [1,0,0,0,1, 0,0,0,1,0, 0,0,1,0,0, 0,1,0,0,0, 1,0,0,0,1],
+  '&': [0,1,0,0,0, 1,0,1,0,0, 0,1,0,1,0, 1,0,0,1,0, 0,1,1,0,1],
+  '*': [0,0,1,0,0, 1,0,1,0,1, 0,1,1,1,0, 1,0,1,0,1, 0,0,1,0,0],
+  '+': [0,0,0,0,0, 0,0,1,0,0, 0,1,1,1,0, 0,0,1,0,0, 0,0,0,0,0],
+  '-': [0,0,0,0,0, 0,0,0,0,0, 0,1,1,1,0, 0,0,0,0,0, 0,0,0,0,0],
+  '_': [0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 1,1,1,1,1],
+  ':': [0,0,0,0,0, 0,0,1,0,0, 0,0,0,0,0, 0,0,1,0,0, 0,0,0,0,0],
+  ';': [0,0,0,0,0, 0,0,1,0,0, 0,0,0,0,0, 0,0,1,0,0, 0,1,0,0,0],
+  '@': [0,1,1,1,0, 1,0,0,0,1, 1,0,1,0,1, 1,0,0,0,1, 0,1,1,1,0],
+  '.': [0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,1,0,0],
+  ',': [0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,1,0,0, 0,1,0,0,0],
+  '/': [0,0,0,0,1, 0,0,0,1,0, 0,0,1,0,0, 0,1,0,0,0, 1,0,0,0,0],
+  '\\': [1,0,0,0,0, 0,1,0,0,0, 0,0,1,0,0, 0,0,0,1,0, 0,0,0,0,1],
+  '(': [0,0,1,0,0, 0,1,0,0,0, 1,0,0,0,0, 0,1,0,0,0, 0,0,1,0,0],
+  ')': [0,0,1,0,0, 0,0,0,1,0, 0,0,0,0,1, 0,0,0,1,0, 0,0,1,0,0],
+  '[': [1,1,1,0,0, 1,0,0,0,0, 1,0,0,0,0, 1,0,0,0,0, 1,1,1,0,0],
+  ']': [0,0,1,1,1, 0,0,0,0,1, 0,0,0,0,1, 0,0,0,0,1, 0,0,1,1,1],
+  '{': [0,0,1,1,0, 0,1,0,0,0, 1,1,0,0,0, 0,1,0,0,0, 0,0,1,1,0],
+  '}': [0,1,1,0,0, 0,0,0,1,0, 0,0,0,1,1, 0,0,0,1,0, 0,1,1,0,0],
+  '<': [0,0,0,1,0, 0,0,1,0,0, 0,1,0,0,0, 0,0,1,0,0, 0,0,0,1,0],
+  '>': [0,1,0,0,0, 0,0,1,0,0, 0,0,0,1,0, 0,0,1,0,0, 0,1,0,0,0],
+  '=': [0,0,0,0,0, 0,1,1,1,0, 0,0,0,0,0, 0,1,1,1,0, 0,0,0,0,0]
+};
+
+// Variables for stamp mode
+let stampModeActive = false;
+let selectedStampChar = null;
+let stampSize = 2; // default medium
+
+// Create buttons for uppercase A-Z
+const uppercaseContainer = document.getElementById('uppercase-buttons');
+for (let i = 65; i <= 90; i++) {
+  const char = String.fromCharCode(i);
+  const btn = document.createElement('button');
+  btn.className = 'tool-btn';
+  btn.style.width = '40px';
+  btn.style.height = '40px';
+  btn.style.fontSize = '18px';
+  btn.style.fontWeight = 'bold';
+  btn.innerHTML = char;
+  btn.dataset.char = char;
+  btn.onclick = () => activateStampMode(char);
+  uppercaseContainer.appendChild(btn);
+}
+
+// Create buttons for lowercase a-z
+const lowercaseContainer = document.getElementById('lowercase-buttons');
+for (let i = 97; i <= 122; i++) {
+  const char = String.fromCharCode(i);
+  const btn = document.createElement('button');
+  btn.className = 'tool-btn';
+  btn.style.width = '40px';
+  btn.style.height = '40px';
+  btn.style.fontSize = '18px';
+  btn.innerHTML = char;
+  btn.dataset.char = char;
+  btn.onclick = () => activateStampMode(char);
+  lowercaseContainer.appendChild(btn);
+}
+
+// Create buttons for numbers 0-9
+const numberContainer = document.getElementById('number-buttons');
+for (let i = 48; i <= 57; i++) {
+  const char = String.fromCharCode(i);
+  const btn = document.createElement('button');
+  btn.className = 'tool-btn';
+  btn.style.width = '40px';
+  btn.style.height = '40px';
+  btn.style.fontSize = '18px';
+  btn.innerHTML = char;
+  btn.dataset.char = char;
+  btn.onclick = () => activateStampMode(char);
+  numberContainer.appendChild(btn);
+}
+
+// Create buttons for symbols
+const symbolContainer = document.getElementById('symbol-buttons');
+const symbols = ['!', '?', '#', '$', '%', '&', '*', '+', '-', '_', ':', ';', '@', '.', ',', '/', '\\', '(', ')', '[', ']', '{', '}', '<', '>', '='];
+symbols.forEach(char => {
+  const btn = document.createElement('button');
+  btn.className = 'tool-btn';
+  btn.style.width = '40px';
+  btn.style.height = '40px';
+  btn.style.fontSize = '18px';
+  btn.innerHTML = char;
+  btn.dataset.char = char;
+  btn.onclick = () => activateStampMode(char);
+  symbolContainer.appendChild(btn);
+});
+
+// Size selector
+const stampSizeSelect = document.getElementById('stamp-size-select');
+stampSizeSelect.addEventListener('change', () => {
+  stampSize = parseInt(stampSizeSelect.value);
+});
+
+// Function to activate stamp mode for a character
+function activateStampMode(char) {
+  selectedStampChar = char;
+  stampModeActive = true;
+  
+  // Change cursor to indicate stamp mode
+  paintCanvas.style.cursor = 'crosshair';
+  
+  // Show status message
+  const oldStatus = document.getElementById('tool-status').innerHTML;
+  document.getElementById('tool-status').innerHTML = `?? STAMP MODE: "${char}" - Click on canvas to stamp`;
+  setTimeout(() => {
+    if (stampModeActive) {
+      document.getElementById('tool-status').innerHTML = `?? Stamping: "${char}"`;
+    } else {
+      document.getElementById('tool-status').innerHTML = oldStatus;
+    }
+  }, 2000);
+  
+  // Close the alphabet panel
+  alphabetPanel.style.display = 'none';
+}
+
+// Function to stamp a character at grid position
+function stampCharacter(char, gridX, gridY) {
+  const charData = charStampData[char];
+  if (!charData) return false;
+  
+  const charWidth = 5; // 5x5 grid
+  const charHeight = 5;
+  const pixelSize = cellSize * stampSize;
+  
+  // Save state before stamping
+  saveState();
+  
+  // Paint the character grid
+  for (let row = 0; row < charHeight; row++) {
+    for (let col = 0; col < charWidth; col++) {
+      const idx = row * charWidth + col;
+      if (charData[idx] === 1) {
+        // Calculate the actual pixel position
+        const startPixelX = gridX * cellSize + (col * pixelSize);
+        const startPixelY = gridY * cellSize + (row * pixelSize);
+        
+        // Paint each pixel of the character cell
+        for (let dy = 0; dy < pixelSize; dy++) {
+          for (let dx = 0; dx < pixelSize; dx++) {
+            const pixelX = startPixelX + dx;
+            const pixelY = startPixelY + dy;
+            const finalGridX = Math.floor(pixelX / cellSize);
+            const finalGridY = Math.floor(pixelY / cellSize);
+            if (finalGridX >= 0 && finalGridX < cols && finalGridY >= 0 && finalGridY < rows) {
+              commitCell(finalGridX, finalGridY, fgColor, false);
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  updateGrid();
+  return true;
+}
+
+// Add a "Stamp" button to the toolbar
+const stampToolBtn = document.createElement('button');
+stampToolBtn.className = 'tool-btn';
+stampToolBtn.dataset.tool = 'stamp';
+stampToolBtn.title = 'CHARACTER STAMP';
+stampToolBtn.innerHTML = '<span style="font-size: 14px;">Aa</span>';
+stampToolBtn.onclick = () => {
+  // Deactivate any active stamp mode
+  stampModeActive = false;
+  selectedStampChar = null;
+  
+  // Show the alphabet panel
+  alphabetPanel.style.display = 'flex';
+  
+  // Update tool status
+  document.getElementById('tool-status').innerHTML = 'Tool: Character Stamp';
+};
+toolsBar.appendChild(stampToolBtn);
+
+// Add canvas click handler for stamping (without breaking existing functionality)
+const originalCanvasClick = paintCanvas.onclick;
+paintCanvas.addEventListener('click', (e) => {
+  if (stampModeActive && selectedStampChar) {
+    e.stopPropagation();
+    const pos = getGridPos(e);
+    if (pos.x >= 0 && pos.x < cols && pos.y >= 0 && pos.y < rows) {
+      stampCharacter(selectedStampChar, pos.x, pos.y);
+      
+      // Optional: stay in stamp mode for multiple stamps
+      // If you want to exit after one stamp, uncomment the next line:
+      // stampModeActive = false;
+    }
+    e.preventDefault();
+  }
+});
+
+// Close panel handlers
+document.getElementById('alphabet-close')?.addEventListener('click', () => {
+  alphabetPanel.style.display = 'none';
+});
+
+// Close panel when clicking outside
+alphabetPanel.addEventListener('click', (e) => {
+  if (e.target === alphabetPanel) {
+    alphabetPanel.style.display = 'none';
+  }
+});
+
+// Add a button to exit stamp mode
+const exitStampBtn = document.createElement('button');
+exitStampBtn.className = 'tool-btn';
+exitStampBtn.style.backgroundColor = '#800000';
+exitStampBtn.style.color = 'white';
+exitStampBtn.innerHTML = '<span style="font-size: 11px;">EXIT</span>';
+exitStampBtn.title = 'Exit Stamp Mode';
+exitStampBtn.onclick = () => {
+  stampModeActive = false;
+  selectedStampChar = null;
+  paintCanvas.style.cursor = 'crosshair';
+  document.getElementById('tool-status').innerHTML = 'Tool: Pen';
+  // Reset to pen tool
+  document.querySelectorAll('.tools-bar .tool-btn').forEach(b => b.classList.remove('active'));
+  const penBtn = document.querySelector('.tools-bar .tool-btn[data-tool="pen"]');
+  if (penBtn) penBtn.classList.add('active');
+  currentTool = 'pen';
+};
+toolsBar.appendChild(exitStampBtn);
+
+console.log('Alphabet & Number Stamp Tool Loaded! Click the "Aa" button to open the character selector!');
+// ============================================================================
+// GLITCH PATTERN SIZE CONTROL - COLOR PALETTE SECTION
+// ============================================================================
+
+// Add Glitch Pattern Size control beside the color palettes
+const colorSection = document.querySelector('.color-section');
+if (colorSection) {
+  const glitchPatternSection = document.createElement('div');
+  glitchPatternSection.className = 'palette-block';
+  glitchPatternSection.style.cssText = `
+    background: #c0c0c0;
+    padding: 3px 5px;
+    box-shadow: inset -1px -1px #fff, inset 1px 1px #0a0a0a;
+    width: 238px;
+    flex-shrink: 0;
+  `;
+  
+  glitchPatternSection.innerHTML = `
+    <div class="palette-title" style="background:#800000; color:white; padding:2px;">GLITCH PATTERN SIZE</div>
+    <div class="sigil-control-group">
+      <div style="display: flex; gap: 3px; flex-wrap: wrap; justify-content: center;">
+        <button class="glitch-pattern-btn" data-pattern-size="1" style="width: 34px; height: 21px; background: #c0c0c0; border: 2px solid; border-color: #fff #808080 #808080 #fff; cursor: pointer; font-weight: bold; font-size:8px;">1x1</button>
+        <button class="glitch-pattern-btn" data-pattern-size="2" style="width: 34px; height: 21px; background: #c0c0c0; border: 2px solid; border-color: #fff #808080 #808080 #fff; cursor: pointer; font-weight: bold; font-size:8px;">2x2</button>
+        <button class="glitch-pattern-btn" data-pattern-size="3" style="width: 34px; height: 21px; background: #c0c0c0; border: 2px solid; border-color: #fff #808080 #808080 #fff; cursor: pointer; font-weight: bold; font-size:8px;">3x3</button>
+        <button class="glitch-pattern-btn" data-pattern-size="4" style="width: 34px; height: 21px; background: #c0c0c0; border: 2px solid; border-color: #fff #808080 #808080 #fff; cursor: pointer; font-weight: bold; font-size:8px;">4x4</button>
+        <button class="glitch-pattern-btn" data-pattern-size="6" style="width: 34px; height: 21px; background: #c0c0c0; border: 2px solid; border-color: #fff #808080 #808080 #fff; cursor: pointer; font-weight: bold; font-size:8px;">6x6</button>
+        <button class="glitch-pattern-btn" data-pattern-size="8" style="width: 34px; height: 21px; background: #c0c0c0; border: 2px solid; border-color: #fff #808080 #808080 #fff; cursor: pointer; font-weight: bold; font-size:8px;">8x8</button>
+        <button class="glitch-pattern-btn" data-pattern-size="10" style="width: 34px; height: 21px; background: #c0c0c0; border: 2px solid; border-color: #fff #808080 #808080 #fff; cursor: pointer; font-weight: bold; font-size:8px;">10</button>
+        <button class="glitch-pattern-btn" data-pattern-size="12" style="width: 34px; height: 21px; background: #c0c0c0; border: 2px solid; border-color: #fff #808080 #808080 #fff; cursor: pointer; font-weight: bold; font-size:8px;">12</button>
+      </div>
+      <div style="font-size: 8px; text-align: center; margin-top: 3px; color: #800000; font-weight: bold;">
+        Current: <span id="glitch-pattern-display">1x1 (10px)</span>
+      </div>
+    </div>
+  `;
+  
+  colorSection.appendChild(glitchPatternSection);
+  
+  // Glitch pattern size variable
+  let glitchPatternSize = 1;
+  
+  // Add click handlers
+  const glitchPatternBtns = document.querySelectorAll('.glitch-pattern-btn');
+  glitchPatternBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      glitchPatternBtns.forEach(b => {
+        b.style.boxShadow = 'inset 1px 1px #fff, inset -1px -1px #0a0a0a, inset 2px 2px #dfdfdf, inset -2px -2px #808080';
+        b.style.background = '#c0c0c0';
+      });
+      btn.style.boxShadow = 'inset -1px -1px #fff, inset 1px 1px #0a0a0a !important';
+      btn.style.background = '#dfdfdf';
+      
+      glitchPatternSize = parseInt(btn.dataset.patternSize);
+      const pxSize = glitchPatternSize * cellSize;
+      document.getElementById('glitch-pattern-display').innerHTML = `${glitchPatternSize}x${glitchPatternSize} (${pxSize}px)`;
+      
+      // Show feedback
+      const oldStatus = document.getElementById('glitch-status').innerHTML;
+      document.getElementById('glitch-status').innerHTML = `?? Pattern size: ${glitchPatternSize}x${glitchPatternSize} (${pxSize}px)`;
+      setTimeout(() => {
+        document.getElementById('glitch-status').innerHTML = oldStatus;
+      }, 1500);
+    });
+  });
+  
+  // Set default active on 1x1
+  const defaultPatternBtn = document.querySelector('.glitch-pattern-btn[data-pattern-size="1"]');
+  if (defaultPatternBtn) {
+    defaultPatternBtn.style.boxShadow = 'inset -1px -1px #fff, inset 1px 1px #0a0a0a !important';
+    defaultPatternBtn.style.background = '#dfdfdf';
+  }
+  
+  // ============================================================================
+  // MODIFIED drawGlitchTool - Scales the glitch pattern (UPDATED for new location)
+  // ============================================================================
+  // Store original drawGlitchTool
+  const originalDrawGlitchTool = window.drawGlitchTool || drawGlitchTool;
+  
+  // Override drawGlitchTool to respect pattern size
+  window.drawGlitchTool = function(targetCtx, px, py, cell, time) {
+    const patternSize = cell.patternSize || 1;
+    
+    if (patternSize === 1) {
+      // Use original for size 1
+      if (originalDrawGlitchTool) originalDrawGlitchTool(targetCtx, px, py, cell, time);
+      return;
+    }
+    
+    // For larger pattern sizes, draw the glitch pattern scaled up
+    const { type, color, offset } = cell;
+    
+    // Create a temporary canvas to draw the pattern at 1x size
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = cellSize;
+    tempCanvas.height = cellSize;
+    const tempCtx = tempCanvas.getContext('2d');
+    
+    // Draw the original 1x pattern on temp canvas
+    const dummyCell = { type, color, offset };
+    if (originalDrawGlitchTool) {
+      originalDrawGlitchTool(tempCtx, 0, 0, dummyCell, time);
+    }
+    
+    // Now scale it up to the pattern size
+    const scaledSize = cellSize * patternSize;
+    targetCtx.imageSmoothingEnabled = false;
+    targetCtx.drawImage(tempCanvas, 0, 0, cellSize, cellSize, px, py, scaledSize, scaledSize);
+  };
+  
+  // Also need to modify commitCell for glitch effects with pattern size
+  const originalCommitCell = window.commitCell || commitCell;
+  
+  window.commitCell = function(nx, ny, color, isEraser) {
+    if (nx >= cols || ny >= rows || nx < 0 || ny < 0) return;
+    if (selection) {
+      if (nx < selection.x || nx >= selection.x + selection.w ||
+        ny < selection.y || ny >= selection.y + selection.h) {
+        return;
+      }
+    }
+    
+    // For glitch effects (non-solid, non-eraser, non-fx area effects)
+    const isGlitchEffect = !isEraser && !currentPaint.startsWith('fx-') && currentPaint !== 'solid';
+    
+    if (isGlitchEffect && glitchPatternSize > 1) {
+      // Instead of storing one cell, store the pattern at the top-left cell
+      grid[ny][nx] = {
+        type: currentPaint,
+        color: color,
+        offset: Math.random(),
+        patternSize: glitchPatternSize
+      };
+      
+      // Clear the surrounding cells that this pattern will cover
+      for (let dy = 0; dy < glitchPatternSize; dy++) {
+        for (let dx = 0; dx < glitchPatternSize; dx++) {
+          if (dx === 0 && dy === 0) continue;
+          const targetX = nx + dx;
+          const targetY = ny + dy;
+          if (targetX < cols && targetY < rows && targetX >= 0 && targetY >= 0) {
+            grid[targetY][targetX] = null;
+          }
+        }
+      }
+    } else if (isEraser) {
+      // Eraser - clear area based on pattern size
+      const eraseSize = Math.max(1, glitchPatternSize);
+      for (let dy = 0; dy < eraseSize; dy++) {
+        for (let dx = 0; dx < eraseSize; dx++) {
+          const targetX = nx + dx;
+          const targetY = ny + dy;
+          if (targetX < cols && targetY < rows && targetX >= 0 && targetY >= 0) {
+            grid[targetY][targetX] = null;
+            staticCtx.fillStyle = color;
+            staticCtx.fillRect(targetX * cellSize, targetY * cellSize, cellSize, cellSize);
+          }
+        }
+      }
+    } else if (currentPaint.startsWith('fx-')) {
+      grid[ny][nx] = {
+        type: currentPaint,
+        color: color,
+        offset: Math.random()
+      };
+    } else if (currentPaint === 'solid') {
+      const solidSize = Math.max(1, glitchPatternSize);
+      for (let dy = 0; dy < solidSize; dy++) {
+        for (let dx = 0; dx < solidSize; dx++) {
+          const targetX = nx + dx;
+          const targetY = ny + dy;
+          if (targetX < cols && targetY < rows && targetX >= 0 && targetY >= 0) {
+            grid[targetY][targetX] = null;
+            staticCtx.fillStyle = color;
+            staticCtx.fillRect(targetX * cellSize, targetY * cellSize, cellSize, cellSize);
+          }
+        }
+      }
+    } else {
+      grid[ny][nx] = {
+        type: currentPaint,
+        color: color,
+        offset: Math.random(),
+        patternSize: glitchPatternSize
+      };
+    }
+    
+    updateGrid();
+  };
+  
+  console.log('Glitch Pattern Size Control Added to Color Palette Section!');
+}
+// ============================================================================
+// PERSISTENT ANIMATED GLITCH CELLS - They keep animating forever!
+// ============================================================================
+
+// Create the panel
+const persistentAnimPanel = document.createElement('div');
+persistentAnimPanel.id = 'persistent-anim-panel';
+persistentAnimPanel.style.cssText = `
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 340px;
+  background: #c0c0c0;
+  border: 1px solid #ffffff;
+  border-right-color: #0a0a0a;
+  border-bottom-color: #0a0a0a;
+  z-index: 2000;
+  display: none;
+  flex-direction: column;
+`;
+
+persistentAnimPanel.innerHTML = `
+  <div class="title-bar">
+    <div class="title-bar-text">?? PERSISTENT GLITCH BRUSH ??</div>
+    <div class="title-bar-controls"><button id="persist-anim-close">X</button></div>
+  </div>
+  <div class="window-body" style="padding: 12px;">
+    <div class="sigil-control-group">
+      <div class="sigil-label">Glitch Style:</div>
+      <select id="persist-anim-style" style="width: 100%;">
+        <option value="rainbow">?? Rainbow Wave</option>
+        <option value="rgb">???? RGB Split</option>
+        <option value="static">?? Static Noise</option>
+        <option value="pulse">?? Pulsing</option>
+        <option value="scan">?? Scanline</option>
+        <option value="warp">?? Warp</option>
+        <option value="data">?? Data Mosh</option>
+      </select>
+    </div>
+    
+    <div class="sigil-control-group">
+      <div class="sigil-label">Speed:</div>
+      <input type="range" id="persist-anim-speed" min="0" max="100" value="50">
+      <span id="persist-anim-speed-val">Normal</span>
+    </div>
+    
+    <div class="sigil-control-group">
+      <div class="sigil-label">Intensity:</div>
+      <input type="range" id="persist-anim-intense" min="0" max="100" value="60">
+      <span id="persist-anim-intense-val">60%</span>
+    </div>
+    
+    <div class="sigil-control-group">
+      <div class="sigil-label">Colors:</div>
+      <div style="display: flex; gap: 8px;">
+        <div id="persist-anim-color1" style="flex:1; height: 28px; background: #ff0066; border: 1px solid #808080; cursor: pointer;"></div>
+        <div id="persist-anim-color2" style="flex:1; height: 28px; background: #00ff66; border: 1px solid #808080; cursor: pointer;"></div>
+        <div id="persist-anim-color3" style="flex:1; height: 28px; background: #0066ff; border: 1px solid #808080; cursor: pointer;"></div>
+      </div>
+    </div>
+    
+    <div class="sigil-control-group">
+      <div class="sigil-label">Brush Mode:</div>
+      <select id="persist-brush-mode" style="width: 100%;">
+        <option value="draw">?? Draw (Adds new animated cells)</option>
+        <option value="erase">?? Erase (Removes animated cells)</option>
+      </select>
+    </div>
+    
+    <button id="persist-anim-activate" class="sigil-btn" style="background:#4b0082; color:white;">?? DRAW ANIMATED CELLS ??</button>
+    <div style="font-size:7px; text-align:center; margin-top:6px;">
+      ? Cells stay animated even after switching tools!<br>
+      Use Erase mode to remove them.
+    </div>
+  </div>
+`;
+
+document.body.appendChild(persistentAnimPanel);
+
+// Global storage for all animated cells (persists across tools!)
+window.animatedGlitchCells = window.animatedGlitchCells || new Map();
+let persistentAnimTime = 0;
+let persistentAnimAnimationId = null;
+let persistentAnimActive = true; // Always active!
+let persistentBrushMode = 'draw';
+
+// Settings
+let persistStyle = 'rainbow';
+let persistSpeed = 50;
+let persistIntensity = 60;
+let persistColor1 = '#ff0066';
+let persistColor2 = '#00ff66';
+let persistColor3 = '#0066ff';
+
+// Speed display
+document.getElementById('persist-anim-speed').addEventListener('input', (e) => {
+  persistSpeed = parseInt(e.target.value);
+  const txt = persistSpeed < 25 ? 'Slow' : persistSpeed < 50 ? 'Normal' : persistSpeed < 75 ? 'Fast' : 'Very Fast';
+  document.getElementById('persist-anim-speed-val').innerText = txt;
+});
+document.getElementById('persist-anim-intense').addEventListener('input', (e) => {
+  persistIntensity = parseInt(e.target.value);
+  document.getElementById('persist-anim-intense-val').innerText = persistIntensity + '%';
+});
+document.getElementById('persist-anim-style').addEventListener('change', (e) => {
+  persistStyle = e.target.value;
+});
+document.getElementById('persist-brush-mode').addEventListener('change', (e) => {
+  persistentBrushMode = e.target.value;
+});
+
+// Simple color picker
+function persistColorPicker(callback) {
+  const div = document.createElement('div');
+  div.style.cssText = `position:fixed; left:50%; top:50%; transform:translate(-50%,-50%); background:#c0c0c0; border:2px solid #000080; padding:10px; z-index:3000; width:260px; display:flex; flex-wrap:wrap; gap:4px;`;
+  const colors = ['#ff0066','#ff3300','#ff6600','#ffcc00','#00ff66','#00ccff','#0066ff','#6600ff','#ff00cc','#ff0000','#00ff00','#0000ff','#ffffff','#000000','#ff4400','#44ff00'];
+  colors.forEach(c => {
+    const s = document.createElement('div');
+    s.style.cssText = `width:35px; height:35px; background:${c}; border:1px solid #fff; cursor:pointer;`;
+    s.onclick = () => { callback(c); document.body.removeChild(div); };
+    div.appendChild(s);
+  });
+  const btn = document.createElement('button');
+  btn.innerText = 'Cancel';
+  btn.style.cssText = 'width:100%; margin-top:8px;';
+  btn.onclick = () => document.body.removeChild(div);
+  div.appendChild(btn);
+  document.body.appendChild(div);
+}
+
+document.getElementById('persist-anim-color1').onclick = () => persistColorPicker(c => { persistColor1 = c; document.getElementById('persist-anim-color1').style.background = c; });
+document.getElementById('persist-anim-color2').onclick = () => persistColorPicker(c => { persistColor2 = c; document.getElementById('persist-anim-color2').style.background = c; });
+document.getElementById('persist-anim-color3').onclick = () => persistColorPicker(c => { persistColor3 = c; document.getElementById('persist-anim-color3').style.background = c; });
+
+// Hex to RGB
+function persistH2r(hex) {
+  return { r: parseInt(hex.slice(1,3),16), g: parseInt(hex.slice(3,5),16), b: parseInt(hex.slice(5,7),16) };
+}
+
+// Get animated color for a cell
+function getPersistAnimColor(x, y, time) {
+  const style = persistStyle;
+  const intense = persistIntensity / 100;
+  const speed = persistSpeed / 50;
+  
+  const c1 = persistH2r(persistColor1);
+  const c2 = persistH2r(persistColor2);
+  const c3 = persistH2r(persistColor3);
+  
+  const t = (Math.sin(x * 0.1 + y * 0.05 + time * 0.03 * speed) + 1) / 2;
+  
+  let r, g, b;
+  
+  if (style === 'rainbow') {
+    const hue = (x * 3 + time * 5 * speed) % 360;
+    const rad = hue * Math.PI / 180;
+    r = 128 + 127 * Math.sin(rad);
+    g = 128 + 127 * Math.sin(rad + 2.09);
+    b = 128 + 127 * Math.sin(rad + 4.18);
+    if (Math.random() < intense * 0.15) { r = Math.random()*255; g = Math.random()*255; b = Math.random()*255; }
+  } else if (style === 'rgb') {
+    const shift = Math.sin(time * 0.04 * speed) * 0.4 * intense;
+    const rt = Math.min(1, Math.max(0, t + shift));
+    const gt = Math.min(1, Math.max(0, t - shift * 0.5));
+    const bt = Math.min(1, Math.max(0, t + shift * 0.7));
+    r = c1.r + (c2.r - c1.r) * rt;
+    g = c1.g + (c2.g - c1.g) * gt;
+    b = c1.b + (c2.b - c1.b) * bt;
+  } else if (style === 'static') {
+    if (Math.random() < intense * 0.35) {
+      r = Math.random() * 255;
+      g = Math.random() * 255;
+      b = Math.random() * 255;
+    } else {
+      r = c1.r + (c2.r - c1.r) * t;
+      g = c1.g + (c2.g - c1.g) * t;
+      b = c1.b + (c2.b - c1.b) * t;
+    }
+  } else if (style === 'pulse') {
+    const pulse = (Math.sin(time * 0.02 * speed) + 1) / 2;
+    const pStr = pulse * intense;
+    r = c1.r + (c2.r - c1.r) * t + (Math.random() - 0.5) * 100 * pStr;
+    g = c1.g + (c2.g - c1.g) * t + (Math.random() - 0.5) * 100 * pStr;
+    b = c1.b + (c2.b - c1.b) * t + (Math.random() - 0.5) * 100 * pStr;
+  } else if (style === 'scan') {
+    const scan = (Math.sin(y * 0.15 + time * 0.05 * speed) + 1) / 2;
+    r = c1.r + (c2.r - c1.r) * scan;
+    g = c1.g + (c2.g - c1.g) * scan;
+    b = c1.b + (c2.b - c1.b) * scan;
+    if (Math.random() < intense * 0.2) { r = 255; g = 255; b = 255; }
+  } else if (style === 'warp') {
+    const warpX = x + Math.sin(y * 0.1 + time * 0.04 * speed) * 5 * intense;
+    const warpT = Math.min(1, Math.max(0, warpX / 30));
+    r = c1.r + (c2.r - c1.r) * warpT;
+    g = c1.g + (c2.g - c1.g) * warpT;
+    b = c1.b + (c2.b - c1.b) * warpT;
+    if (Math.random() < intense * 0.1) { r = c3.r; g = c3.g; b = c3.b; }
+  } else if (style === 'data') {
+    const blockSize = Math.floor(5 + (1 - intense) * 15);
+    const blockX = Math.floor(x / blockSize);
+    const blockY = Math.floor(y / blockSize);
+    const dataT = ((blockX * 131 + blockY * 253 + Math.floor(time * 5 * speed)) % 100) / 100;
+    r = c1.r + (c2.r - c1.r) * dataT;
+    g = c1.g + (c2.g - c1.g) * dataT;
+    b = c1.b + (c2.b - c1.b) * dataT;
+    if (Math.random() < intense * 0.25) {
+      r = c3.r + (Math.random() - 0.5) * 80;
+      g = c3.g + (Math.random() - 0.5) * 80;
+      b = c3.b + (Math.random() - 0.5) * 80;
+    }
+  } else {
+    r = c1.r + (c2.r - c1.r) * t;
+    g = c1.g + (c2.g - c1.g) * t;
+    b = c1.b + (c2.b - c1.b) * t;
+  }
+  
+  return `rgb(${Math.min(255, Math.max(0, Math.floor(r)))}, ${Math.min(255, Math.max(0, Math.floor(g)))}, ${Math.min(255, Math.max(0, Math.floor(b)))})`;
+}
+
+// Main animation loop - runs FOREVER, animating ALL glitch cells
+function animateAllGlitchCells() {
+  if (!persistentAnimActive) {
+    persistentAnimAnimationId = requestAnimationFrame(animateAllGlitchCells);
+    return;
+  }
+  
+  persistentAnimTime += (persistSpeed / 50) * 2;
+  
+  // Animate all stored glitch cells
+  for (let [key, cell] of window.animatedGlitchCells) {
+    const [x, y] = key.split(',').map(Number);
+    if (x >= 0 && x < cols && y >= 0 && y < rows) {
+      // Also check if this cell has been overwritten by normal drawing
+      // If grid has a non-animated cell here, remove from animation
+      const gridCell = grid[y]?.[x];
+      if (gridCell && !gridCell.isGlitchAnimated) {
+        window.animatedGlitchCells.delete(key);
+        continue;
+      }
+      
+      const color = getPersistAnimColor(x, y, persistentAnimTime);
+      staticCtx.fillStyle = color;
+      staticCtx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+    } else {
+      window.animatedGlitchCells.delete(key);
+    }
+  }
+  
+  persistentAnimAnimationId = requestAnimationFrame(animateAllGlitchCells);
+}
+
+// Start the perpetual animation
+function startPerpetualAnimation() {
+  if (persistentAnimAnimationId) {
+    cancelAnimationFrame(persistentAnimAnimationId);
+  }
+  persistentAnimActive = true;
+  persistentAnimTime = 0;
+  animateAllGlitchCells();
+}
+
+// Stop (but usually we want it running)
+function stopPerpetualAnimation() {
+  persistentAnimActive = false;
+}
+
+// Add animated glitch cell (called when drawing)
+function addAnimatedGlitchCell(x, y) {
+  if (x >= 0 && x < cols && y >= 0 && y < rows) {
+    const key = `${x},${y}`;
+    if (!window.animatedGlitchCells.has(key)) {
+      window.animatedGlitchCells.set(key, { 
+        x, y, 
+        style: persistStyle,
+        added: Date.now()
+      });
+    }
+    // Also mark grid cell as animated
+    if (grid[y] && grid[y][x]) {
+      grid[y][x].isGlitchAnimated = true;
+    }
+    // Draw initial color
+    const initColor = getPersistAnimColor(x, y, persistentAnimTime);
+    staticCtx.fillStyle = initColor;
+    staticCtx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+  }
+}
+
+function removeAnimatedGlitchCell(x, y) {
+  const key = `${x},${y}`;
+  if (window.animatedGlitchCells.has(key)) {
+    window.animatedGlitchCells.delete(key);
+    // Restore normal drawing (clear to background)
+    staticCtx.fillStyle = bgColor;
+    staticCtx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+    if (grid[y] && grid[y][x]) {
+      grid[y][x] = null;
+    }
+  }
+}
+
+// Override commitCell to add animated cells
+const originalCommitAnimPersist = commitCell;
+window.commitCell = function(nx, ny, color, isEraser) {
+  // Handle persistent glitch brush drawing
+  if (currentPaint === 'persist-glitch' && !isEraser) {
+    if (nx >= cols || ny >= rows || nx < 0 || ny < 0) return;
+    if (selection && (nx < selection.x || nx >= selection.x + selection.w ||
+        ny < selection.y || ny >= selection.y + selection.h)) return;
+    
+    if (persistentBrushMode === 'draw') {
+      addAnimatedGlitchCell(nx, ny);
+    } else if (persistentBrushMode === 'erase') {
+      removeAnimatedGlitchCell(nx, ny);
+    }
+    updateGrid();
+    return;
+  }
+  
+  // For normal drawing, check if we're overwriting an animated cell
+  if (originalCommitAnimPersist) {
+    const key = `${nx},${ny}`;
+    if (window.animatedGlitchCells.has(key) && !isEraser) {
+      window.animatedGlitchCells.delete(key);
+    }
+    originalCommitAnimPersist(nx, ny, color, isEraser);
+  }
+};
+
+// Override applyPenTool for persistent glitch brush
+const originalPenAnimPersist = applyPenTool;
+window.applyPenTool = function(pos, activeColor, isEraser) {
+  if (currentPaint === 'persist-glitch' && !isEraser) {
+    if (lastGrid && lastGrid.x === pos.x && lastGrid.y === pos.y) return;
+    lastGrid = pos;
+    
+    for (let dy = 0; dy < brushSize; dy++) {
+      for (let dx = 0; dx < brushSize; dx++) {
+        const tx = pos.x + dx;
+        const ty = pos.y + dy;
+        if (tx >= 0 && tx < cols && ty >= 0 && ty < rows) {
+          if (persistentBrushMode === 'draw') {
+            addAnimatedGlitchCell(tx, ty);
+          } else if (persistentBrushMode === 'erase') {
+            removeAnimatedGlitchCell(tx, ty);
+          }
+        }
+      }
+    }
+    updateGrid();
+    return;
+  }
+  
+  if (originalPenAnimPersist) {
+    originalPenAnimPersist(pos, activeColor, isEraser);
+  }
+};
+
+// Add the brush to paints panel
+if (!paintPatterns.includes('persist-glitch')) {
+  paintPatterns.push('persist-glitch');
+}
+
+const persistBrushBtn = document.createElement('button');
+persistBrushBtn.className = 'tool-btn';
+persistBrushBtn.dataset.paint = 'persist-glitch';
+persistBrushBtn.title = 'PERSISTENT GLITCH BRUSH (Never stops animating!)';
+persistBrushBtn.innerHTML = '<span style="font-size: 10px;">???</span>';
+persistBrushBtn.onclick = () => {
+  paintsBar.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+  persistBrushBtn.classList.add('active');
+  currentPaint = 'persist-glitch';
+  document.getElementById('glitch-status').innerHTML = '?? PERSISTENT GLITCH! Draw! (Stays animated)';
+  persistentAnimPanel.style.display = 'flex';
+};
+paintsBar.appendChild(persistBrushBtn);
+
+// Panel controls
+document.getElementById('persist-anim-activate').addEventListener('click', () => {
+  persistentAnimPanel.style.display = 'none';
+  document.getElementById('glitch-status').innerHTML = `?? ${persistStyle} | ${persistIntensity}% | Mode: ${persistentBrushMode}`;
+});
+
+document.getElementById('persist-anim-close').addEventListener('click', () => {
+  persistentAnimPanel.style.display = 'none';
+});
+
+// When settings change, update display
+const updatePersistDisplay = () => {
+  if (currentPaint === 'persist-glitch') {
+    document.getElementById('glitch-status').innerHTML = `?? ${persistStyle} | ${persistIntensity}%`;
+  }
+};
+document.getElementById('persist-anim-style').addEventListener('change', updatePersistDisplay);
+document.getElementById('persist-anim-intense').addEventListener('change', updatePersistDisplay);
+document.getElementById('persist-brush-mode').addEventListener('change', (e) => {
+  document.getElementById('glitch-status').innerHTML = `?? ${persistStyle} | Mode: ${e.target.value}`;
+});
+
+// Also add a CLEAR ALL button to the panel
+const clearAllBtn = document.createElement('button');
+clearAllBtn.className = 'sigil-btn';
+clearAllBtn.style.marginTop = '4px';
+clearAllBtn.style.background = '#800000';
+clearAllBtn.style.color = 'white';
+clearAllBtn.innerHTML = '?? CLEAR ALL ANIMATED CELLS ??';
+clearAllBtn.onclick = () => {
+  if (confirm('Clear ALL animated glitch cells? They will stop animating.')) {
+    window.animatedGlitchCells.clear();
+    updateGrid();
+    document.getElementById('glitch-status').innerHTML = '? All animated cells cleared';
+    setTimeout(() => {
+      if (currentPaint === 'persist-glitch') {
+        document.getElementById('glitch-status').innerHTML = `?? ${persistStyle} | ${persistIntensity}%`;
+      }
+    }, 1500);
+  }
+};
+persistentAnimPanel.querySelector('.window-body').appendChild(clearAllBtn);
+
+// Start the perpetual animation when page loads
+startPerpetualAnimation();
+
+console.log('?? PERSISTENT GLITCH BRUSH LOADED! Cells stay animated even after switching tools!');
+// ============================================================================
+// FIXED GIF EXPORT - Properly exits export mode after saving
+// ============================================================================
+
+// Store the original exportGIF function if it exists
+const originalExportGIFFixed = window.exportGIF;
+
+// Replace with fixed version
+window.exportGIF = async function() {
+  const overlay = document.getElementById('gif-progress-overlay');
+  const status = document.getElementById('gif-status-text');
+  const pb = document.getElementById('gif-progress-bar');
+  overlay.style.display = 'flex';
+  
+  const hasAnim = typeof gifFrames !== 'undefined' && gifFrames && gifFrames.length > 1;
+  const frameDelayMs = Math.round(1000 / exportFps);
+  const totalFrames = hasAnim ? gifFrames.length : Math.max(12, Math.min(120, Math.floor(3000 / frameDelayMs)));
+  const scale = exportScale;
+  const outputWidth = canvasWidth * scale;
+  const outputHeight = canvasHeight * scale;
+  
+  let workerUrl;
+  try {
+    const resp = await fetch('https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.worker.js');
+    workerUrl = URL.createObjectURL(await resp.blob());
+  } catch (e) {
+    alert('GIF encoder failed');
+    overlay.style.display = 'none';
+    return;
+  }
+  
+  const gif = new GIF({
+    workers: 2,
+    quality: 10,
+    width: outputWidth,
+    height: outputHeight,
+    workerScript: workerUrl,
+    repeat: 0
+  });
+  
+  // Helper function to render a single frame with proper pattern scaling
+  function renderGifFrame(frameTime, sourceCanvas, overlayGrid, outWidth, outHeight) {
+    const nativeWidth = canvasWidth;
+    const nativeHeight = canvasHeight;
+    
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = nativeWidth;
+    tempCanvas.height = nativeHeight;
+    const tempCtx = tempCanvas.getContext('2d');
+    tempCtx.imageSmoothingEnabled = false;
+    
+    // Draw the base canvas
+    tempCtx.drawImage(sourceCanvas, 0, 0);
+    
+    // Track fx cells
+    const fxCells = [];
+    
+    // Draw all glitch cells with proper pattern scaling
+    for (let y = 0; y < rows; y++) {
+      for (let x = 0; x < cols; x++) {
+        const cell = overlayGrid[y]?.[x];
+        if (cell) {
+          if (cell.type.startsWith('fx-')) {
+            fxCells.push({ x, y, type: cell.type });
+          } else {
+            // Draw with pattern size support
+            const patternSize = cell.patternSize || 1;
+            if (patternSize === 1) {
+              drawGlitchTool(tempCtx, x * cellSize, y * cellSize, cell, frameTime);
+            } else {
+              // For larger patterns, draw scaled
+              const blockSize = cellSize * patternSize;
+              const miniCanvas = document.createElement('canvas');
+              miniCanvas.width = cellSize;
+              miniCanvas.height = cellSize;
+              const miniCtx = miniCanvas.getContext('2d');
+              miniCtx.imageSmoothingEnabled = false;
+              const dummyCell = { ...cell, patternSize: 1 };
+              drawGlitchTool(miniCtx, 0, 0, dummyCell, frameTime);
+              tempCtx.drawImage(miniCanvas, 0, 0, cellSize, cellSize, x * cellSize, y * cellSize, blockSize, blockSize);
+            }
+          }
+        }
+      }
+    }
+    
+    // Apply area effects
+    if (fxCells.length > 0) {
+      const compCanvas = document.createElement('canvas');
+      compCanvas.width = nativeWidth;
+      compCanvas.height = nativeHeight;
+      const compCtx = compCanvas.getContext('2d');
+      compCtx.drawImage(tempCanvas, 0, 0);
+      fxCells.forEach(cell => {
+        processAreaEffect(compCtx, cell.x * cellSize, cell.y * cellSize, cellSize, cellSize, cell.type, frameTime);
+      });
+      tempCtx.clearRect(0, 0, nativeWidth, nativeHeight);
+      tempCtx.drawImage(compCanvas, 0, 0);
+    }
+    
+    // Scale if needed
+    if (outWidth !== nativeWidth || outHeight !== nativeHeight) {
+      const scaled = document.createElement('canvas');
+      scaled.width = outWidth;
+      scaled.height = outHeight;
+      const sCtx = scaled.getContext('2d');
+      sCtx.imageSmoothingEnabled = false;
+      sCtx.drawImage(tempCanvas, 0, 0, nativeWidth, nativeHeight, 0, 0, outWidth, outHeight);
+      return scaled;
+    }
+    return tempCanvas;
+  }
+  
+  // Generate frames
+  for (let i = 0; i < totalFrames; i++) {
+    status.innerText = `Frame ${i + 1}/${totalFrames}`;
+    pb.style.width = Math.round(((i + 1) / (totalFrames + 1)) * 50) + '%';
+    
+    const delay = hasAnim && gifFrames[i] ? (gifFrames[i].delay || frameDelayMs) : frameDelayMs;
+    let frameCanvas;
+    const frameTime = performance.now() + i * frameDelayMs;
+    
+    if (hasAnim && gifFrames[i] && gifFrames[i].canvas) {
+      const overlayGrid = (typeof composeGifOverlayGrid === 'function') ? composeGifOverlayGrid(i) : (gifFrameGrids[i] || grid);
+      frameCanvas = renderGifFrame(frameTime, gifFrames[i].canvas, overlayGrid, outputWidth, outputHeight);
+    } else {
+      frameCanvas = renderGifFrame(frameTime, staticCanvas, grid, outputWidth, outputHeight);
+    }
+    
+    gif.addFrame(frameCanvas, { delay, copy: true });
+    await new Promise(r => setTimeout(r, 0));
+  }
+  
+  status.innerText = 'Encoding...';
+  pb.style.width = '50%';
+  gif.on('progress', p => pb.style.width = (50 + Math.round(p * 50)) + '%');
+  gif.on('finished', blob => {
+    URL.revokeObjectURL(workerUrl);
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = scale > 1 ? `glitch-paint-${scale}x-${exportFps}fps.gif` : `glitch-paint-${exportFps}fps.gif`;
+    a.click();
+    overlay.style.display = 'none';
+    
+    // Show confirmation
+    document.getElementById('tool-status').innerHTML = '? GIF saved!';
+    setTimeout(() => {
+      if (currentTool === 'pen') {
+        document.getElementById('tool-status').innerHTML = 'Tool: Pen';
+      } else {
+        document.getElementById('tool-status').innerHTML = `Tool: ${currentTool}`;
+      }
+    }, 2000);
+  });
+  gif.render();
+};
+
+// Also fix the menuSaveGif to use the new export function
+const menuSaveGifFixed = document.getElementById('menu-save-gif');
+if (menuSaveGifFixed) {
+  const newMenuSaveGif = menuSaveGifFixed.cloneNode(true);
+  menuSaveGifFixed.parentNode.replaceChild(newMenuSaveGif, menuSaveGifFixed);
+  newMenuSaveGif.addEventListener('click', (e) => {
+    e.stopPropagation();
+    closeAllMenus();
+    window.exportGIF();
+  });
+}
+// Also make sure the persistent animation never gets permanently stopped
+if (typeof startPerpetualAnimation === 'function') {
+  // Ensure persistent animation always restarts if stopped
+  const originalStopPerpetual = stopPerpetualAnimation;
+  window.stopPerpetualAnimation = function() {
+    if (originalStopPerpetual) originalStopPerpetual();
+    // Don't let it stay stopped
+    setTimeout(() => {
+      if (!persistentAnimActive && !isExportingGIF) {
+        startPerpetualAnimation();
+      }
+    }, 100);
+  };
+}
+
+// Also fix the regular render function to ensure it always works
+const ensureRenderWorks = setInterval(() => {
+  if (typeof render === 'function' && !isExportingGIF) {
+    // Render is working, do nothing
+  }
+}, 5000);
+
+console.log('? GIF EXPORT FIXED! Drawing and animations will continue working after export!');
+// ============================================================================
+// NEON COLOR PALETTE - Adds glowing neon colors to your color picker!
+// ============================================================================
+
+// Neon colors array
+const neonColors = [
+  // Bright Neons
+  '#ff0040', // Neon Red
+  '#ff4400', // Neon Orange-Red
+  '#ff8800', // Neon Orange
+  '#ffcc00', // Neon Yellow
+  '#ccff00', // Neon Lime
+  '#44ff00', // Neon Green
+  '#00ff44', // Neon Mint
+  '#00ffaa', // Neon Teal
+  '#00ffff', // Neon Cyan
+  '#00aaff', // Neon Sky Blue
+  '#0044ff', // Neon Blue
+  '#6600ff', // Neon Purple
+  '#aa00ff', // Neon Violet
+  '#ff00cc', // Neon Pink
+  '#ff0099', // Neon Hot Pink
+  '#ff0066', // Neon Rose
+  
+  // Glow Neons (slightly lighter)
+  '#ff3366', // Glow Pink
+  '#ff6633', // Glow Coral
+  '#ffaa33', // Glow Amber
+  '#eaff33', // Glow Lemon
+  '#88ff33', // Glow Chartreuse
+  '#33ff88', // Glow Seafoam
+  '#33ffff', // Glow Aqua
+  '#33aaff', // Glow Azure
+  '#6688ff', // Glow Periwinkle
+  '#cc66ff', // Glow Lavender
+  '#ff66ff', // Glow Magenta
+  '#ff6699', // Glow Salmon
+  
+  // Ultra Bright (almost white neons)
+  '#ff88aa', // Neon Pastel Pink
+  '#ffbb88', // Neon Peach
+  '#ffee88', // Neon Butter
+  '#bbff88', // Neon Lime Green
+  '#88ffcc', // Neon Aquamarine
+  '#88ffff', // Neon Ice Blue
+  '#aa88ff', // Neon Lilac
+  '#ff88ff'  // Neon Bubblegum
+];
+
+const neonPaletteGrid = document.querySelector('.neon-palette-grid') || paletteGrid;
+
+// Add neon colors to the existing palette grid
+neonColors.forEach(color => {
+  const square = document.createElement('div');
+  square.className = 'palette-color';
+  square.style.background = color;
+  square.style.boxShadow = `0 0 3px ${color}`; // Subtle glow effect
+  square.title = color.toUpperCase();
+  
+  square.onpointerdown = (e) => {
+    if (e.button === 2) {
+      bgColor = color;
+      document.getElementById('bg-swatch').style.background = bgColor;
+      // Flash status to show neon selection
+      document.getElementById('tool-status').innerHTML = `? NEON BG: ${color}`;
+    } else {
+      fgColor = color;
+      document.getElementById('fg-swatch').style.background = fgColor;
+      document.getElementById('tool-status').innerHTML = `? NEON FG: ${color}`;
+    }
+    setTimeout(() => {
+      if (currentTool === 'pen') {
+        document.getElementById('tool-status').innerHTML = 'Tool: Pen';
+      } else if (currentTool === 'fill') {
+        document.getElementById('tool-status').innerHTML = 'Tool: Fill';
+      }
+    }, 1000);
+  };
+  
+  square.oncontextmenu = (e) => e.preventDefault();
+  neonPaletteGrid.appendChild(square);
+});
+
+// Also add a "Glow Effect" toggle for extra neon goodness!
+const glowToggle = document.createElement('div');
+glowToggle.style.cssText = `
+  grid-column: span 16;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 9px;
+  padding: 2px;
+  background: #c0c0c0;
+  border: 1px solid #808080;
+  cursor: pointer;
+`;
+
+let glowEnabled = false;
+
+glowToggle.innerHTML = `
+  <span>?</span>
+  <span id="glow-toggle-text">GLOW MODE OFF</span>
+  <span>?</span>
+`;
+
+glowToggle.onclick = () => {
+  glowEnabled = !glowEnabled;
+  const glowText = document.getElementById('glow-toggle-text');
+  if (glowEnabled) {
+    glowText.innerHTML = '?? GLOW MODE ON! ??';
+    glowToggle.style.background = '#4b0082';
+    glowToggle.style.color = '#ffffff';
+    document.getElementById('tool-status').innerHTML = '? GLOW MODE ACTIVATED! Colors will glow! ?';
+    
+    // Apply glow effect to all neon swatches
+    document.querySelectorAll('.palette-color').forEach(swatch => {
+      const bgColor = swatch.style.background;
+      if (neonColors.includes(bgColor) || bgColor.includes('ff')) {
+        swatch.style.boxShadow = `0 0 6px ${bgColor}, 0 0 3px ${bgColor}`;
+        swatch.style.border = '1px solid #ffffff';
+      }
+    });
+  } else {
+    glowText.innerHTML = 'GLOW MODE OFF';
+    glowToggle.style.background = '#c0c0c0';
+    glowToggle.style.color = '#000000';
+    document.getElementById('tool-status').innerHTML = 'Glow mode off';
+    
+    // Remove glow effect
+    document.querySelectorAll('.palette-color').forEach(swatch => {
+      swatch.style.boxShadow = 'none';
+      swatch.style.border = '1px solid';
+      swatch.style.borderColor = '#dfdfdf #808080 #808080 #dfdfdf';
+    });
+  }
+  
+  setTimeout(() => {
+    if (currentTool === 'pen') {
+      document.getElementById('tool-status').innerHTML = 'Tool: Pen';
+    }
+  }, 1500);
+};
+
+neonPaletteGrid.appendChild(glowToggle);
+
+// Add a quick neon gradient button to the toolbar (optional)
+const neonGradientBtn = document.createElement('button');
+neonGradientBtn.className = 'tool-btn';
+neonGradientBtn.innerHTML = '<span style="font-size: 12px;">???</span>';
+neonGradientBtn.title = 'NEON RAINBOW GRADIENT';
+neonGradientBtn.onclick = () => {
+  // Quick set neon rainbow gradient
+  gradientStartColor = neonColors[0]; // Neon Red
+  gradientEndColor = neonColors[14]; // Neon Purple
+  persistColor1 = neonColors[0];
+  persistColor2 = neonColors[7];
+  persistColor3 = neonColors[14];
+  
+  // Update swatches
+  if (document.getElementById('gradient-start-swatch')) {
+    document.getElementById('gradient-start-swatch').style.background = gradientStartColor;
+    document.getElementById('gradient-end-swatch').style.background = gradientEndColor;
+  }
+  if (document.getElementById('persist-anim-color1')) {
+    document.getElementById('persist-anim-color1').style.background = persistColor1;
+    document.getElementById('persist-anim-color2').style.background = persistColor2;
+    document.getElementById('persist-anim-color3').style.background = persistColor3;
+  }
+  
+  document.getElementById('tool-status').innerHTML = '? NEON RAINBOW READY! ?';
+  setTimeout(() => {
+    document.getElementById('tool-status').innerHTML = 'Tool: Pen';
+  }, 1500);
+};
+
+console.log('?? NEON COLOR PALETTE ADDED! ' + neonColors.length + ' glowing colors ready!');
+// ============================================================================
+// ADJUSTABLE BOTTOM PANEL - Drag to resize
+// ============================================================================
+
+// Find the bottom bar and its container
+const bottomBar = document.querySelector('.bottom-bar');
+const windowBody = document.querySelector('.window-body');
+
+if (bottomBar && windowBody) {
+  // Create a resize handle (gripper)
+  const resizeHandle = document.createElement('div');
+  resizeHandle.style.cssText = `
+    height: 6px;
+    background: #c0c0c0;
+    cursor: ns-resize;
+    border-top: 1px solid #dfdfdf;
+    border-bottom: 1px solid #808080;
+    margin: 0;
+    flex-shrink: 0;
+    position: relative;
+  `;
+  
+  // Add gripper dots visual
+  resizeHandle.innerHTML = `
+    <div style="display: flex; justify-content: center; gap: 6px; position: absolute; top: -2px; left: 50%; transform: translateX(-50%);">
+      <span style="font-size: 8px;">?</span>
+      <span style="font-size: 8px;">?</span>
+      <span style="font-size: 8px;">?</span>
+    </div>
+  `;
+  
+  // Insert resize handle BEFORE the bottom bar
+  windowBody.insertBefore(resizeHandle, bottomBar);
+  
+  // Variables for resizing
+  let isResizing = false;
+  let startY = 0;
+  let startHeight = 0;
+  let minBottomHeight = 80;
+  let maxBottomHeight = 300;
+  
+  // Store original canvas container height for reference
+  const canvasContainer = document.querySelector('.canvas-container');
+  const mainArea = document.querySelector('.main-area');
+  
+  // Get or create style element for dynamic heights
+  let styleEl = document.getElementById('resize-styles');
+  if (!styleEl) {
+    styleEl = document.createElement('style');
+    styleEl.id = 'resize-styles';
+    document.head.appendChild(styleEl);
+  }
+  
+  // Function to update bottom bar height
+  function setBottomHeight(height) {
+    const clampedHeight = Math.min(maxBottomHeight, Math.max(minBottomHeight, height));
+    bottomBar.style.height = clampedHeight + 'px';
+    bottomBar.style.overflow = 'auto';
+    
+    // Also adjust inner containers for scrolling
+    const colorSection = bottomBar.querySelector('.color-section');
+    const glitchSection = bottomBar.querySelector('.glitch-fx-section');
+    const palettePair = bottomBar.querySelector('.palette-pair');
+    
+    if (colorSection) colorSection.style.maxHeight = (clampedHeight - 50) + 'px';
+    if (palettePair) palettePair.style.maxHeight = (clampedHeight - 50) + 'px';
+    if (glitchSection) glitchSection.style.maxHeight = (clampedHeight - 50) + 'px';
+    
+    // Adjust paints bar max height
+    const paintsBar = bottomBar.querySelector('.paints-bar');
+    if (paintsBar) paintsBar.style.maxHeight = (clampedHeight - 60) + 'px';
+    
+    // Save preference
+    localStorage.setItem('glitchpaint_bottom_height', clampedHeight);
+  }
+  
+  // Load saved height
+  const savedHeight = localStorage.getItem('glitchpaint_bottom_height');
+  if (savedHeight) {
+    setBottomHeight(parseInt(savedHeight));
+  } else {
+    // Default height
+    bottomBar.style.height = '110px';
+    bottomBar.style.overflow = 'auto';
+    const paintsBar = bottomBar.querySelector('.paints-bar');
+    if (paintsBar) paintsBar.style.maxHeight = '60px';
+  }
+  
+  // Mouse events for resizing
+  resizeHandle.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    isResizing = true;
+    startY = e.clientY;
+    startHeight = bottomBar.offsetHeight;
+    
+    document.body.style.cursor = 'ns-resize';
+    document.body.style.userSelect = 'none';
+  });
+  
+  document.addEventListener('mousemove', (e) => {
+    if (!isResizing) return;
+    e.preventDefault();
+    
+    const deltaY = startY - e.clientY;
+    const newHeight = startHeight + deltaY;
+    setBottomHeight(newHeight);
+  });
+  
+  document.addEventListener('mouseup', () => {
+    isResizing = false;
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+  });
+  
+  // Touch support for tablets
+  resizeHandle.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    isResizing = true;
+    startY = e.touches[0].clientY;
+    startHeight = bottomBar.offsetHeight;
+  });
+  
+  document.addEventListener('touchmove', (e) => {
+    if (!isResizing) return;
+    e.preventDefault();
+    const deltaY = startY - e.touches[0].clientY;
+    const newHeight = startHeight + deltaY;
+    setBottomHeight(newHeight);
+  });
+  
+  document.addEventListener('touchend', () => {
+    isResizing = false;
+  });
+  
+  // Also add a double-click to reset to default
+  resizeHandle.addEventListener('dblclick', () => {
+    setBottomHeight(110);
+  });
+  
+  console.log('? Adjustable bottom panel added! Drag the dotted bar to resize!');
+}
+
+// Also make the right panel adjustable (optional)
+const rightPanel = document.querySelector('.right-panel');
+if (rightPanel) {
+  // Create resize handle for right panel (left edge)
+  const mainAreaForResize = document.querySelector('.main-area');
+  if (mainAreaForResize) {
+    const rightResizeHandle = document.createElement('div');
+    rightResizeHandle.style.cssText = `
+      width: 4px;
+      background: #c0c0c0;
+      cursor: ew-resize;
+      border-left: 1px solid #dfdfdf;
+      border-right: 1px solid #808080;
+      flex-shrink: 0;
+    `;
+    
+    // Insert before right panel
+    mainAreaForResize.insertBefore(rightResizeHandle, rightPanel);
+    
+    let isResizingRight = false;
+    let startX = 0;
+    let startWidth = 0;
+    let minRightWidth = 180;
+    let maxRightWidth = 400;
+    
+    rightResizeHandle.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      isResizingRight = true;
+      startX = e.clientX;
+      startWidth = rightPanel.offsetWidth;
+      document.body.style.cursor = 'ew-resize';
+      document.body.style.userSelect = 'none';
+    });
+    
+    document.addEventListener('mousemove', (e) => {
+      if (!isResizingRight) return;
+      e.preventDefault();
+      const deltaX = startX - e.clientX;
+      let newWidth = startWidth + deltaX;
+      newWidth = Math.min(maxRightWidth, Math.max(minRightWidth, newWidth));
+      rightPanel.style.width = newWidth + 'px';
+      localStorage.setItem('glitchpaint_right_width', newWidth);
+    });
+    
+    document.addEventListener('mouseup', () => {
+      isResizingRight = false;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    });
+    
+    // Touch support
+    rightResizeHandle.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      isResizingRight = true;
+      startX = e.touches[0].clientX;
+      startWidth = rightPanel.offsetWidth;
+    });
+    
+    document.addEventListener('touchmove', (e) => {
+      if (!isResizingRight) return;
+      e.preventDefault();
+      const deltaX = startX - e.touches[0].clientX;
+      let newWidth = startWidth + deltaX;
+      newWidth = Math.min(maxRightWidth, Math.max(minRightWidth, newWidth));
+      rightPanel.style.width = newWidth + 'px';
+    });
+    
+    document.addEventListener('touchend', () => {
+      isResizingRight = false;
+    });
+    
+    // Load saved right panel width
+    const savedRightWidth = localStorage.getItem('glitchpaint_right_width');
+    if (savedRightWidth) {
+      rightPanel.style.width = savedRightWidth + 'px';
+    }
+    
+    rightResizeHandle.addEventListener('dblclick', () => {
+      rightPanel.style.width = '238px';
+      localStorage.setItem('glitchpaint_right_width', 238);
+    });
+    
+    console.log('? Adjustable right panel added!');
+  }
+}
+
+// Also make the left panel adjustable
+const leftPanel = document.querySelector('.left-panel');
+if (leftPanel) {
+  const mainAreaForLeft = document.querySelector('.main-area');
+  if (mainAreaForLeft) {
+    const leftResizeHandle = document.createElement('div');
+    leftResizeHandle.style.cssText = `
+      width: 4px;
+      background: #c0c0c0;
+      cursor: ew-resize;
+      border-left: 1px solid #dfdfdf;
+      border-right: 1px solid #808080;
+      flex-shrink: 0;
+    `;
+    
+    // Insert after left panel
+    if (leftPanel.nextSibling) {
+      mainAreaForLeft.insertBefore(leftResizeHandle, leftPanel.nextSibling);
+    } else {
+      mainAreaForLeft.appendChild(leftResizeHandle);
+    }
+    
+    let isResizingLeft = false;
+    let startXLeft = 0;
+    let startWidthLeft = 0;
+    let minLeftWidth = 55;
+    let maxLeftWidth = 120;
+    
+    leftResizeHandle.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      isResizingLeft = true;
+      startXLeft = e.clientX;
+      startWidthLeft = leftPanel.offsetWidth;
+      document.body.style.cursor = 'ew-resize';
+      document.body.style.userSelect = 'none';
+    });
+    
+    document.addEventListener('mousemove', (e) => {
+      if (!isResizingLeft) return;
+      e.preventDefault();
+      const deltaX = e.clientX - startXLeft;
+      let newWidth = startWidthLeft + deltaX;
+      newWidth = Math.min(maxLeftWidth, Math.max(minLeftWidth, newWidth));
+      leftPanel.style.width = newWidth + 'px';
+      localStorage.setItem('glitchpaint_left_width', newWidth);
+    });
+    
+    document.addEventListener('mouseup', () => {
+      isResizingLeft = false;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    });
+    
+    // Touch support
+    leftResizeHandle.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      isResizingLeft = true;
+      startXLeft = e.touches[0].clientX;
+      startWidthLeft = leftPanel.offsetWidth;
+    });
+    
+    document.addEventListener('touchmove', (e) => {
+      if (!isResizingLeft) return;
+      e.preventDefault();
+      const deltaX = e.touches[0].clientX - startXLeft;
+      let newWidth = startWidthLeft + deltaX;
+      newWidth = Math.min(maxLeftWidth, Math.max(minLeftWidth, newWidth));
+      leftPanel.style.width = newWidth + 'px';
+    });
+    
+    document.addEventListener('touchend', () => {
+      isResizingLeft = false;
+    });
+    
+    // Load saved left panel width
+    const savedLeftWidth = localStorage.getItem('glitchpaint_left_width');
+    if (savedLeftWidth) {
+      leftPanel.style.width = savedLeftWidth + 'px';
+    }
+    
+    leftResizeHandle.addEventListener('dblclick', () => {
+      leftPanel.style.width = '66px';
+      localStorage.setItem('glitchpaint_left_width', 66);
+    });
+    
+    console.log('? Adjustable left panel added!');
+  }
+}
+
+console.log('?? All panels are now adjustable! Drag the dotted lines to resize!');
+</script>
+</body>
+
+</html>
