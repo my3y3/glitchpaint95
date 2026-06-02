@@ -3,14 +3,24 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, user-scalable=no">
+
   <title>Glitch Paint 95 - Sigil Studio Edition</title>
-  <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#00ffcc">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- PWA -->
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#00ffcc">
+
+  <!-- Retro UI -->
   <link rel="stylesheet" href="https://unpkg.com/98.css" />
+
+  <!-- GIF Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/gifuct-js@2.1.2/dist/gifuct.min.js"></script>
+
+  <!-- GIF Decoder -->
   <script type="module">
     window.gifDecoderReady = import('https://cdn.jsdelivr.net/npm/gifuct-js@2.1.2/+esm')
       .then(mod => {
@@ -21,6 +31,7 @@
         window.gifDecoderLoadError = err;
       });
   </script>
+</head>
   <style>
     /* WIN95 STYLING */
     <script>
