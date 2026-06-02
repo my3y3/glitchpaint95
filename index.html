@@ -4238,6 +4238,271 @@ if (leftPanel) {
 }
 
 console.log('?? All panels are now adjustable! Drag the dotted lines to resize!');
+  // ============================================================================
+// CUSTOM ASPECT RATIO PATTERN SIZE & ROTATION CONTROL
+// ============================================================================
+
+// Add these variables near your other glitch settings
+let customPatternW = 1;
+let customPatternH = 1;
+let patternRotation = 0; // 0, 90, 180, 270
+
+// Find the glitch pattern size section and add custom controls
+const glitchPatternSection = document.querySelector('.palette-block:has(.glitch-pattern-btn)') || 
+                             document.querySelector('.glitch-pattern-size-section');
+
+if (glitchPatternSection) {
+    // Add custom aspect ratio controls
+    const customDiv = document.createElement('div');
+    customDiv.style.cssText = `
+        margin-top: 8px;
+        padding-top: 5px;
+        border-top: 1px solid #808080;
+    `;
+    customDiv.innerHTML = `
+        <div style="font-size: 8px; font-weight: bold; color: #800000; margin-bottom: 4px; text-align: center;">
+            🎛️ CUSTOM PATTERN SIZE & ROTATION 🎛️
+        </div>
+        <div style="display: flex; gap: 4px; align-items: center; justify-content: center; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 2px;">
+                <span style="font-size: 8px;">W:</span>
+                <input type="number" id="custom-pattern-w" min="1" max="16" value="1" 
+                       style="width: 40px; background: white; border: 1px solid #808080; font-size: 9px; text-align: center;">
+                <span style="font-size: 8px;">H:</span>
+                <input type="number" id="custom-pattern-h" min="1" max="16" value="1" 
+                       style="width: 40px; background: white; border: 1px solid #808080; font-size: 9px; text-align: center;">
+            </div>
+            <select id="custom-pattern-rot" style="font-size: 9px; width: 70px;">
+                <option value="0">0°</option>
+                <option value="90">90°</option>
+                <option value="180">180°</option>
+                <option value="270">270°</option>
+            </select>
+            <button id="apply-custom-pattern" class="sigil-btn" 
+                    style="width: auto; padding: 2px 8px; margin: 0; font-size: 8px;">APPLY</button>
+        </div>
+        <div id="custom-pattern-status" style="font-size: 7px; text-align: center; margin-top: 3px; color: #000080;">
+            1x1 | 0°
+        </div>
+    `;
+    glitchPatternSection.appendChild(customDiv);
+}
+
+// Function to apply custom pattern settings
+function applyCustomPatternSettings() {
+    const wInput = document.getElementById('custom-pattern-w');
+    const hInput = document.getElementById('custom-pattern-h');
+    const rotSelect = document.getElementById('custom-pattern-rot');
+    
+    if (wInput && hInput && rotSelect) {
+        customPatternW = Math.min(16, Math.max(1, parseInt(wInput.value) || 1));
+        customPatternH = Math.min(16, Math.max(1, parseInt(hInput.value) || 1));
+        patternRotation = parseInt(rotSelect.value);
+        
+        wInput.value = customPatternW;
+        hInput.value = customPatternH;
+        
+        const statusSpan = document.getElementById('custom-pattern-status');
+        if (statusSpan) {
+            statusSpan.innerHTML = `${customPatternW}x${customPatternH} | ${patternRotation}°`;
+        }
+        
+        // Update glitch status bar
+        const glitchStatus = document.getElementById('glitch-status');
+        if (glitchStatus) {
+            glitchStatus.innerHTML = `🎨 Pattern: ${customPatternW}x${customPatternH} rot${patternRotation}°`;
+            setTimeout(() => {
+                glitchStatus.innerHTML = glitchStatus.innerHTML.replace(/🎨 Pattern:.*/, `FX: ${currentPaint}`);
+            }, 2000);
+        }
+    }
+}
+
+// Add event listeners if elements exist
+const applyBtn = document.getElementById('apply-custom-pattern');
+if (applyBtn) {
+    applyBtn.addEventListener('click', applyCustomPatternSettings);
+}
+
+const wInput2 = document.getElementById('custom-pattern-w');
+const hInput2 = document.getElementById('custom-pattern-h');
+const rotSelect2 = document.getElementById('custom-pattern-rot');
+
+if (wInput2) wInput2.addEventListener('change', applyCustomPatternSettings);
+if (hInput2) hInput2.addEventListener('change', applyCustomPatternSettings);
+if (rotSelect2) rotSelect2.addEventListener('change', applyCustomPatternSettings);
+
+// ============================================================================
+// MODIFIED commitCell - Supports custom aspect ratios and rotation
+// ============================================================================
+
+// Store original functions if they exist
+const originalCommitCell = window.commitCell || commitCell;
+const originalDrawGlitchTool = window.drawGlitchTool || drawGlitchTool;
+
+// Override commitCell to store pattern dimensions and rotation
+window.commitCell = function(nx, ny, color, isEraser) {
+    if (nx >= cols || ny >= rows || nx < 0 || ny < 0) return;
+    if (selection) {
+        if (nx < selection.x || nx >= selection.x + selection.w ||
+            ny < selection.y || ny >= selection.y + selection.h) {
+            return;
+        }
+    }
+    
+    const isGlitchEffect = !isEraser && !currentPaint.startsWith('fx-') && currentPaint !== 'solid';
+    
+    if (isGlitchEffect) {
+        // Store with custom dimensions and rotation
+        grid[ny][nx] = {
+            type: currentPaint,
+            color: color,
+            offset: Math.random(),
+            patternW: customPatternW,
+            patternH: customPatternH,
+            patternRot: patternRotation
+        };
+        
+        // Clear cells that this pattern will cover (non-square support)
+        for (let dy = 0; dy < customPatternH; dy++) {
+            for (let dx = 0; dx < customPatternW; dx++) {
+                if (dx === 0 && dy === 0) continue;
+                const targetX = nx + dx;
+                const targetY = ny + dy;
+                if (targetX < cols && targetY < rows && targetX >= 0 && targetY >= 0) {
+                    grid[targetY][targetX] = null;
+                }
+            }
+        }
+    } else if (isEraser) {
+        const eraseW = Math.max(1, customPatternW);
+        const eraseH = Math.max(1, customPatternH);
+        for (let dy = 0; dy < eraseH; dy++) {
+            for (let dx = 0; dx < eraseW; dx++) {
+                const targetX = nx + dx;
+                const targetY = ny + dy;
+                if (targetX < cols && targetY < rows && targetX >= 0 && targetY >= 0) {
+                    grid[targetY][targetX] = null;
+                    staticCtx.fillStyle = color;
+                    staticCtx.fillRect(targetX * cellSize, targetY * cellSize, cellSize, cellSize);
+                }
+            }
+        }
+    } else if (currentPaint === 'solid') {
+        const solidW = Math.max(1, customPatternW);
+        const solidH = Math.max(1, customPatternH);
+        for (let dy = 0; dy < solidH; dy++) {
+            for (let dx = 0; dx < solidW; dx++) {
+                const targetX = nx + dx;
+                const targetY = ny + dy;
+                if (targetX < cols && targetY < rows && targetX >= 0 && targetY >= 0) {
+                    grid[targetY][targetX] = null;
+                    staticCtx.fillStyle = color;
+                    staticCtx.fillRect(targetX * cellSize, targetY * cellSize, cellSize, cellSize);
+                }
+            }
+        }
+    } else if (currentPaint.startsWith('fx-')) {
+        grid[ny][nx] = {
+            type: currentPaint,
+            color: color,
+            offset: Math.random()
+        };
+    } else {
+        grid[ny][nx] = {
+            type: currentPaint,
+            color: color,
+            offset: Math.random(),
+            patternW: customPatternW,
+            patternH: customPatternH,
+            patternRot: patternRotation
+        };
+    }
+    
+    if (typeof updateGrid === 'function') updateGrid();
+};
+
+// ============================================================================
+// MODIFIED drawGlitchTool - Supports custom aspect ratios and rotation
+// ============================================================================
+
+window.drawGlitchTool = function(targetCtx, px, py, cell, time) {
+    const patternW = cell.patternW || 1;
+    const patternH = cell.patternH || 1;
+    const patternRot = cell.patternRot || 0;
+    
+    // If it's a standard 1x1 with no rotation, use original drawing
+    if (patternW === 1 && patternH === 1 && patternRot === 0) {
+        if (originalDrawGlitchTool) {
+            originalDrawGlitchTool(targetCtx, px, py, cell, time);
+        } else {
+            // Fallback drawing
+            targetCtx.fillStyle = cell.color || '#000000';
+            targetCtx.fillRect(px, py, cellSize, cellSize);
+        }
+        return;
+    }
+    
+    // Calculate block size
+    const blockPixelW = cellSize * patternW;
+    const blockPixelH = cellSize * patternH;
+    
+    // Create a temporary canvas for the 1x1 pattern
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = cellSize;
+    tempCanvas.height = cellSize;
+    const tempCtx = tempCanvas.getContext('2d');
+    tempCtx.imageSmoothingEnabled = false;
+    
+    // Draw the original 1x1 pattern
+    const dummyCell = { ...cell, patternW: 1, patternH: 1, patternRot: 0 };
+    if (originalDrawGlitchTool) {
+        originalDrawGlitchTool(tempCtx, 0, 0, dummyCell, time);
+    } else {
+        tempCtx.fillStyle = cell.color || '#000000';
+        tempCtx.fillRect(0, 0, cellSize, cellSize);
+    }
+    
+    // Apply rotation and scaling to the target context
+    targetCtx.save();
+    
+    // Move to center of the block
+    targetCtx.translate(px + blockPixelW / 2, py + blockPixelH / 2);
+    
+    // Apply rotation
+    targetCtx.rotate(patternRot * Math.PI / 180);
+    
+    // Move back to top-left
+    targetCtx.translate(-blockPixelW / 2, -blockPixelH / 2);
+    
+    // Draw the scaled pattern
+    targetCtx.imageSmoothingEnabled = false;
+    targetCtx.drawImage(tempCanvas, 0, 0, cellSize, cellSize, 0, 0, blockPixelW, blockPixelH);
+    
+    targetCtx.restore();
+};
+
+// Also override applyPenTool to use the new commitCell
+if (typeof applyPenTool === 'function' && originalCommitCell) {
+    const originalPenTool = applyPenTool;
+    window.applyPenTool = function(pos, activeColor, isEraser) {
+        if (window.lastGrid && window.lastGrid.x === pos.x && window.lastGrid.y === pos.y) return;
+        window.lastGrid = pos;
+        for (let dy = 0; dy < brushSize; dy++) {
+            for (let dx = 0; dx < brushSize; dx++) {
+                window.commitCell(pos.x + dx, pos.y + dy, activeColor, isEraser);
+            }
+        }
+        if (typeof updateGrid === 'function') updateGrid();
+    };
+}
+
+// Initialize with default values
+setTimeout(() => {
+    applyCustomPatternSettings();
+}, 100);
+
+console.log('✅ Custom aspect ratio pattern size & rotation added! Try 2x3, 1x4, 3x2 with rotation!');
 </script>
 </body>
 
